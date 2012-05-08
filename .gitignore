@@ -1,0 +1,5 @@
+.DS_Store
+project/target
+target
+.idea
+.idea_modules
