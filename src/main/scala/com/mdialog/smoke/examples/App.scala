@@ -1,13 +1,13 @@
 package com.mdialog.smoke.examples
 
 import com.mdialog.smoke._
-import com.mdialog.smoke.mongrel2.Mongrel2Server
+import com.mdialog.smoke.netty.NettyServer
 import akka.dispatch.{ Future, Promise }
 import akka.actor.ActorSystem
 
 object ExampleApp extends App with Smoke {
   
-  val server = new Mongrel2Server
+  val server = new NettyServer
     
   onRequest {
     case GET(Path("/test")) => Future {
