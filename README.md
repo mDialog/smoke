@@ -1,7 +1,7 @@
 Smoke
 ======
 
-## Simple, asynchronous HTTP using Akka
+*Simple, asynchronous HTTP using Akka*
 
 Run the sample app:
 
@@ -15,10 +15,8 @@ Make requests:
 
 This project is released under the Apache License v2, for more details see the 'LICENSE' file.
 
-### Contributors 
+### Contributors
 
-{Chris Dinn}[mailto:cdinn@mdialog.com]
+Chris Dinn
 
-----
-
-{An mDialog Project.}[http://mdialog.com/]
+**©2012 mDialog Corp. All rights reserved.**
