@@ -16,7 +16,7 @@ libraryDependencies ++= Seq(
 
 resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
 
-credentials += Credentials(Path.userHome / "mdialog.credentials")
+credentials += Credentials(Path.userHome / ".mdialog.credentials")
 
 publishTo <<= version { (v: String) =>
   if (v.trim.endsWith("-SNAPSHOT")) 
