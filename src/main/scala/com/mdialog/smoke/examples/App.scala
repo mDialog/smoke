@@ -1,22 +1,14 @@
 package com.mdialog.smoke.examples
 
 import com.mdialog.smoke._
-import com.mdialog.smoke.netty.NettyServer
-
-import java.util.concurrent.Executors
-import akka.dispatch.{ ExecutionContext, Future, Promise }
-import akka.util.Timeout
-import akka.util.duration._
+import com.mdialog.smoke.mongrel2.Mongrel2Server
+import akka.dispatch.{ Future, Promise }
+import akka.actor.ActorSystem
 
 object ExampleApp extends App with Smoke {
-
-  val executorService = Executors.newCachedThreadPool
-  implicit val context = ExecutionContext.fromExecutor(executorService)
   
-  //implicit val timeout = Timeout(2 seconds)
-  
-  val server = new NettyServer(7771)
-  
+  val server = new Mongrel2Server
+    
   onRequest {
     case GET(Path("/test")) => Future {
       Thread.sleep(1000)
@@ -24,9 +16,13 @@ object ExampleApp extends App with Smoke {
     }
     case _ => Promise.successful(Response(NotFound))
   }
+  
+  onError {
+    case e: Exception => Response(InternalServerError, body = e.getMessage)
+  }
 
   after { response =>
-    val headers = response.headers + ("Server" -> "Example App/0.0.1")
+    val headers = response.headers + ("Server" -> "Smoke Example App/0.0.1")
     Response(response.status, headers, response.body)
   }
   

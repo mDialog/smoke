@@ -1,22 +1,47 @@
 package com.mdialog.smoke
 
-import akka.actor.ActorRef
-import akka.dispatch.Future
+import java.util.concurrent.Executors
+import akka.dispatch.{ Future, Promise }
+import akka.actor.ActorSystem
+import com.typesafe.config.ConfigFactory
 
-trait Smoke {
+trait Smoke extends App {
+
+  implicit val config = ConfigFactory.load()
+  implicit val dispatcher = ActorSystem("Smoke", config).dispatcher
+  
+  private var beforeFilter = { request: Request => request } 
+  private var responder = { request: Request => 
+    Promise.successful(Response(ServiceUnavailable)).future
+  }
+  private var afterFilter = { response: Response => response }
+  private var errorHandler: PartialFunction[Throwable, Response] = { 
+    case e: Exception => Response(InternalServerError) 
+  }
+  
+  private def application = 
+    beforeFilter andThen responder andThen { f => 
+      f recover(errorHandler) map afterFilter 
+    }
+  
   val server: Server
     
-  def before(filter: (Request) => Request) =
-    server.setBeforeFilter(filter)
+  def before(filter: (Request) => Request) { beforeFilter = filter }
 
-  def after(filter: (Response) => Response) =
-    server.setAfterFilter(filter)
+  def after(filter: (Response) => Response) { afterFilter = filter }
 
-  def onRequest(responder: (Request) => Future[Response]) =
-    server.setResponder(responder)
+  def onRequest(handler: (Request) => Future[Response]) { responder = handler }
 
-  def onError(handler: PartialFunction[Throwable, Response]) =
-    server.setErrorHandler(handler)
+  def onError(handler: PartialFunction[Throwable, Response]) { errorHandler = handler }
+
+  abstract override def main(args: Array[String]) = {
+    super.main(args)
+    server.setApplication(application)
+  }
+}
+
+trait Server {
+  def setApplication(application: (Request) => Future[Response]): Unit
 }
 
 /**

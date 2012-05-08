@@ -1,5 +1,6 @@
 package com.mdialog.smoke.mongrel2
 
+import com.typesafe.config.Config
 import akka.actor._
 import akka.dispatch.{ Future, Promise }
 import akka.zeromq.ZeroMQExtension
@@ -7,15 +8,20 @@ import akka.zeromq.{ Connect, Frame, Listener, SocketType, ZMQMessage }
 
 import com.mdialog.smoke._
 
-class Mongrel2Server(receiveAddress: String, sendAddress: String) extends Server {
-  val system = ActorSystem("SmokeMongrel2Server") 
-  val handler = system.actorOf(Props(new Mongrel2Handler(receiveAddress, sendAddress)))
+class Mongrel2Server(implicit config: Config) extends Server {
+  val recvAddress = config.getString("smoke.mongrel2.recvAddress")
+  val sendAddress = config.getString("smoke.mongrel2.sendAddress")
   
-  println("Receiving requests on " + receiveAddress)
+  val system = ActorSystem("SmokeMongrel2Server") 
+  val handler = system.actorOf(Props(new Mongrel2Handler(recvAddress, sendAddress)))
+  
+  println("Receiving requests on " + recvAddress)
   println("Sending responses on " + sendAddress)
   
-  def updateApplication = handler ! SetApplication(application)
-
+  def setApplication(application: (Request) => Future[Response]) {
+    handler ! SetApplication(application)
+  }
+  
   case class SetApplication(application: (Request) => Future[Response])
 
   class Mongrel2Handler(receiveAddress: String, sendAddress: String) 

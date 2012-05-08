@@ -1,5 +1,6 @@
 package com.mdialog.smoke.netty
 
+import com.typesafe.config.Config  
 import akka.actor._  
 import akka.dispatch.{ ExecutionContext, Future, Promise }  
 
@@ -17,9 +18,10 @@ import collection.JavaConversions._
 
 import com.mdialog.smoke._
 
-class NettyServer(port: Int) extends Server {  
-  var handler = new NettyServerHandler()
-  var piplineFactory = new NettyServerPipelineFactory(handler)
+class NettyServer(implicit config: Config) extends Server {
+  val port = config.getInt("smoke.netty.port")
+  val handler = new NettyServerHandler()
+  val piplineFactory = new NettyServerPipelineFactory(handler)
   
   val bootstrap = new ServerBootstrap(
     new NioServerSocketChannelFactory(
@@ -30,7 +32,9 @@ class NettyServer(port: Int) extends Server {
   
   println("Netty now accepting HTTP connections on port " + port.toString)
     
-  def updateApplication = handler.setApplication(application)
+  def setApplication(application: (Request) => Future[Response]) {
+    handler.setApplication(application)
+  }  
 }
 
 class NettyServerPipelineFactory(handler: NettyServerHandler) 
