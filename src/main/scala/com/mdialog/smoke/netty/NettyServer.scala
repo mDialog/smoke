@@ -84,7 +84,6 @@ class NettyServerHandler(log: (Request, Response) => Unit) extends SimpleChannel
   }
   
   override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) {
-    e.getCause.printStackTrace();
     e.getChannel.close();
   }
 }
