@@ -10,7 +10,10 @@ import akka.actor.ActorSystem
 
 trait Smoke extends App {
   implicit val config = ConfigFactory.load()
-  implicit val dispatcher = ActorSystem("Smoke", config).dispatcher
+  
+  val system = ActorSystem("Smoke", config)
+  
+  implicit val dispatcher = system.dispatcher
   
   private var beforeFilter = { request: Request => request }
   private var responder = { request: Request => 
