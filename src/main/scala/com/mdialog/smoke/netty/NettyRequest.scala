@@ -1,11 +1,14 @@
 package com.mdialog.smoke.netty
 
+import java.net.SocketAddress
+import java.net.InetSocketAddress
 import org.jboss.netty.handler.codec.http.HttpRequest
 import org.jboss.netty.util.CharsetUtil
 import java.net.URI
 import com.mdialog.smoke.Request
 
-case class NettyRequest(nettyRequest: HttpRequest) extends Request {
+case class NettyRequest(address: SocketAddress, nettyRequest: HttpRequest) 
+  extends Request {
   private val u = new URI(nettyRequest.getUri)
     
   val method = nettyRequest.getMethod.toString
@@ -14,7 +17,7 @@ case class NettyRequest(nettyRequest: HttpRequest) extends Request {
   val hostWithPort = u.getHost + ":" + u.getPort
   val host = u.getHost
   val port = u.getPort
-  val ip = ""
+  val ip = address.asInstanceOf[InetSocketAddress].getAddress.getHostAddress
   val headers = Map.empty[String, String]
   
   val queryString = if (u.getRawQuery == null) None else Some(u.getRawQuery)

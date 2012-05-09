@@ -3,10 +3,8 @@ package com.mdialog.smoke.examples
 import com.mdialog.smoke._
 import com.mdialog.smoke.netty.NettyServer
 import akka.dispatch.{ Future, Promise }
-import akka.actor.ActorSystem
 
 object ExampleApp extends App with Smoke {
-  
   val server = new NettyServer
     
   onRequest {
@@ -25,5 +23,4 @@ object ExampleApp extends App with Smoke {
     val headers = response.headers + ("Server" -> "Smoke Example App/0.0.1")
     Response(response.status, headers, response.body)
   }
-  
 }

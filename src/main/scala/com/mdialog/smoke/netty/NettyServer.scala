@@ -20,7 +20,7 @@ import com.mdialog.smoke._
 
 class NettyServer(implicit config: Config) extends Server {
   val port = config.getInt("smoke.netty.port")
-  val handler = new NettyServerHandler()
+  val handler = new NettyServerHandler(log)
   val piplineFactory = new NettyServerPipelineFactory(handler)
   
   val bootstrap = new ServerBootstrap(
@@ -51,12 +51,13 @@ class NettyServerPipelineFactory(handler: NettyServerHandler)
   }
 }
 
-class NettyServerHandler extends SimpleChannelUpstreamHandler {
+class NettyServerHandler(log: (Request, Response) => Unit) extends SimpleChannelUpstreamHandler {
   val executorService = Executors.newCachedThreadPool
   implicit val context = ExecutionContext.fromExecutor(executorService)
     
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
-    val request = NettyRequest(e.getMessage.asInstanceOf[HttpRequest])
+    val address = e.getRemoteAddress
+    val request = NettyRequest(address, e.getMessage.asInstanceOf[HttpRequest])
     
     application(request) map { response =>
       val status = HttpResponseStatus.valueOf(response.statusCode)
@@ -77,9 +78,6 @@ class NettyServerHandler extends SimpleChannelUpstreamHandler {
   var application: (Request) => Future[Response] = { request =>
     Promise.successful(Response(ServiceUnavailable))
   }  
-
-  def log(request: Request, response: Response) =
-    println(response.statusCode + " " + response.statusMessage + " " + request.path)
 
   def setApplication(newApplication: (Request) => Future[Response]) { 
     application = newApplication 

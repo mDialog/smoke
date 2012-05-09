@@ -26,7 +26,7 @@ class Mongrel2Server(implicit config: Config) extends Server {
 
   class Mongrel2Handler(receiveAddress: String, sendAddress: String) 
     extends Actor {
-
+      
     import context.dispatcher
     val system = ZeroMQExtension(context.system)
     
@@ -44,15 +44,16 @@ class Mongrel2Server(implicit config: Config) extends Server {
       pubSocket ! ZMQMessage(Seq(Frame(header + " ")))
     }
 
-    def log(request: Mongrel2Request, response: Response) =
-      println(request.sender + " " + request.connection + " - " + response.statusCode + " " + response.statusMessage + " " + request.path)
-
     def receive = {
       case m: ZMQMessage => 
-        val request = Mongrel2Request(m.payload(0))
-        application(request) map { response =>
-          send(request, response) 
-          log(request, response)
+        try {
+          val request = Mongrel2Request(m.payload(0))
+          application(request) map { response =>
+            send(request, response) 
+            log(request, response)
+          }
+        } catch {
+          case _ => 
         }
 
       case SetApplication(newApplication) => application = newApplication

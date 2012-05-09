@@ -1,12 +1,14 @@
 package com.mdialog.smoke
 
 import java.util.concurrent.Executors
-import akka.dispatch.{ Future, Promise }
-import akka.actor.ActorSystem
+import java.util.Date
+import java.text.SimpleDateFormat
 import com.typesafe.config.ConfigFactory
 
-trait Smoke extends App {
+import akka.dispatch.{ Future, Promise }
+import akka.actor.ActorSystem
 
+trait Smoke extends App {
   implicit val config = ConfigFactory.load()
   implicit val dispatcher = ActorSystem("Smoke", config).dispatcher
   
@@ -41,6 +43,12 @@ trait Smoke extends App {
 }
 
 trait Server {
+  val log = { (request: Request, response: Response) =>
+    val dateFormat = new SimpleDateFormat("dd/MMM/yyyy:HH:mm:ss Z");
+    println("[" + dateFormat.format(new Date()) + "] " + request.ip + " " +
+            response.statusCode + " " + request.path)
+  }
+  
   def setApplication(application: (Request) => Future[Response]): Unit
 }
 
