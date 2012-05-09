@@ -4,18 +4,21 @@ import com.mdialog.smoke._
 import com.mdialog.smoke.netty.NettyServer
 import akka.dispatch.{ Future, Promise }
 
+object NotFoundException extends Exception("Not found")
+
 object ExampleApp extends App with Smoke {
   val server = new NettyServer
-    
+  
   onRequest {
     case GET(Path("/test")) => Future {
       Thread.sleep(1000)
       Response(Ok, body="It took me a second to build this response.\n")
     }
-    case _ => Promise.successful(Response(NotFound))
+    case _ => fail(NotFoundException)
   }
   
   onError {
+    case NotFoundException => Response(NotFound)
     case e: Exception => Response(InternalServerError, body = e.getMessage)
   }
 

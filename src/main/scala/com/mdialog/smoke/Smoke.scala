@@ -12,7 +12,7 @@ trait Smoke extends App {
   implicit val config = ConfigFactory.load()
   implicit val dispatcher = ActorSystem("Smoke", config).dispatcher
   
-  private var beforeFilter = { request: Request => request } 
+  private var beforeFilter = { request: Request => request }
   private var responder = { request: Request => 
     Promise.successful(Response(ServiceUnavailable)).future
   }
@@ -27,7 +27,7 @@ trait Smoke extends App {
     }
   
   val server: Server
-    
+  
   def before(filter: (Request) => Request) { beforeFilter = filter }
 
   def after(filter: (Response) => Response) { afterFilter = filter }
@@ -35,6 +35,10 @@ trait Smoke extends App {
   def onRequest(handler: (Request) => Future[Response]) { responder = handler }
 
   def onError(handler: PartialFunction[Throwable, Response]) { errorHandler = handler }
+
+  def fail(e: Exception) = {
+    Promise.failed(e)
+  }
 
   abstract override def main(args: Array[String]) = {
     super.main(args)
