@@ -1,4 +1,4 @@
-package com.mdialog.smoke.mongrel2
+package smoke.mongrel2
 
 import org.scalatest.FunSpec
 import io.Source

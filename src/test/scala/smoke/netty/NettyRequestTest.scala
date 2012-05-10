@@ -1,4 +1,4 @@
-package com.mdialog.smoke.netty
+package smoke.netty
 
 import org.scalatest.FunSpec
 

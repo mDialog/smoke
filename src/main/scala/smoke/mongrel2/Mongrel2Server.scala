@@ -1,4 +1,4 @@
-package com.mdialog.smoke.mongrel2
+package smoke.mongrel2
 
 import com.typesafe.config.Config
 import akka.actor._
@@ -6,7 +6,7 @@ import akka.dispatch.{ Future, Promise }
 import akka.zeromq.ZeroMQExtension
 import akka.zeromq.{ Connect, Frame, Listener, SocketType, ZMQMessage }
 
-import com.mdialog.smoke._
+import smoke._
 
 class Mongrel2Server(implicit config: Config) extends Server {
   val recvAddress = config.getString("smoke.mongrel2.recvAddress")

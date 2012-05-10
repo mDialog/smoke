@@ -1,4 +1,4 @@
-package com.mdialog.smoke.netty
+package smoke.netty
 
 import com.typesafe.config.Config  
 import akka.actor._  
@@ -16,7 +16,7 @@ import org.jboss.netty.util.CharsetUtil
 
 import collection.JavaConversions._
 
-import com.mdialog.smoke._
+import smoke._
 
 class NettyServer(implicit config: Config) extends Server {
   val port = config.getInt("smoke.netty.port")

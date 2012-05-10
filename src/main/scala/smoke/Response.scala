@@ -1,4 +1,4 @@
-package com.mdialog.smoke
+package smoke
 
 case class Response(status: ResponseStatus,
                     headers: Map[String, String] = Map.empty,

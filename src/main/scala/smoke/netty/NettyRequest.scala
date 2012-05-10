@@ -1,11 +1,11 @@
-package com.mdialog.smoke.netty
+package smoke.netty
 
 import java.net.SocketAddress
 import java.net.InetSocketAddress
 import org.jboss.netty.handler.codec.http.HttpRequest
 import org.jboss.netty.util.CharsetUtil
 import java.net.URI
-import com.mdialog.smoke.Request
+import smoke.Request
 
 case class NettyRequest(address: SocketAddress, nettyRequest: HttpRequest) 
   extends Request {

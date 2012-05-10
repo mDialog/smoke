@@ -1,7 +1,7 @@
-package com.mdialog.smoke.mongrel2
+package smoke.mongrel2
 
 import util.parsing.json.JSON
-import com.mdialog.smoke.Request
+import smoke.Request
 
 case class Mongrel2Request(rawData: Array[Byte]) extends Request {
   private val message = new String(rawData, "UTF-8")

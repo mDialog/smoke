@@ -1,4 +1,4 @@
-package com.mdialog.smoke
+package smoke
 
 import java.util.concurrent.Executors
 import java.util.Date

@@ -1,7 +1,7 @@
-package com.mdialog.smoke.examples
+package smoke.examples
 
-import com.mdialog.smoke._
-import com.mdialog.smoke.netty.NettyServer
+import smoke._
+import smoke.netty.NettyServer
 
 import akka.actor._
 import akka.pattern.ask
