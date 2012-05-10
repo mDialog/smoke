@@ -8,14 +8,13 @@ import akka.routing.RoundRobinRouter
 import akka.pattern.ask
 
 object NotFoundException extends Exception("Not found")
-object UnauthorizedException extends Exception("Unauthorized")
 
 class PooledResponder extends Actor {
   def receive = {
     case GET(Path("/test")) => 
       Thread.sleep(1000)
       sender ! Response(Ok, body="It took me a second to build this response.\n")
-    case _ => Status.Failure(NotFoundException)
+    case _ => sender ! Status.Failure(NotFoundException)
   }
 }
 
@@ -27,7 +26,6 @@ object ActorPoolExampleApp extends App with Smoke {
   
   onError {
     case NotFoundException => Response(NotFound)
-    case UnauthorizedException => Response(Unauthorized)
     case e: Exception => Response(InternalServerError, body = e.getMessage)
   }
 
