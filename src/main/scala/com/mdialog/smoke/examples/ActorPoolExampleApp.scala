@@ -23,7 +23,7 @@ object ActorPoolExampleApp extends App with Smoke {
   val server = new NettyServer
   val pool = system.actorOf(Props[PooledResponder].withRouter(RoundRobinRouter(5)))
   
-  onRequest { r => pool ? r mapTo manifest[Response] }
+  onRequest (pool ? _ mapTo manifest[Response])
   
   onError {
     case NotFoundException => Response(NotFound)

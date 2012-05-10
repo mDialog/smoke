@@ -19,7 +19,7 @@ object ActorExampleApp extends App with Smoke {
   val server = new NettyServer
   val actor = system.actorOf(Props[Responder])
   
-  onRequest { r => actor ? r mapTo manifest[Response] }
+  onRequest (actor ? _ mapTo manifest[Response])
 
   after { response =>
     val headers = response.headers + ("Server" -> "ActorExampleApp/0.0.1")
