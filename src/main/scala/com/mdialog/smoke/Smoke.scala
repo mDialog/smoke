@@ -7,12 +7,16 @@ import com.typesafe.config.ConfigFactory
 
 import akka.dispatch.{ Future, Promise }
 import akka.actor.ActorSystem
+import akka.util.Timeout
+import akka.util.duration._
 
 trait Smoke extends App {
   implicit val config = ConfigFactory.load()
   
   val system = ActorSystem("Smoke", config)
+  val timeoutDuration = config.getInt("smoke.timeout")
   
+  implicit val timeout = Timeout(timeoutDuration milliseconds)
   implicit val dispatcher = system.dispatcher
   
   private var beforeFilter = { request: Request => request }
@@ -39,9 +43,11 @@ trait Smoke extends App {
 
   def onError(handler: PartialFunction[Throwable, Response]) { errorHandler = handler }
 
-  def fail(e: Exception) = {
-    Promise.failed(e)
-  }
+  def reply(action: => Response) = Future(action)
+
+  def reply(r: Response) = Promise.successful(r)
+  
+  def fail(e: Exception) = Promise.failed(e)
 
   abstract override def main(args: Array[String]) = {
     super.main(args)
