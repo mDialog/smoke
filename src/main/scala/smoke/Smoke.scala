@@ -25,7 +25,7 @@ trait Smoke extends App {
   }
   private var afterFilter = { response: Response => response }
   private var errorHandler: PartialFunction[Throwable, Response] = { 
-    case e: Exception => Response(InternalServerError) 
+    case t: Throwable => Response(InternalServerError) 
   }
   
   private def application = 
@@ -41,7 +41,9 @@ trait Smoke extends App {
 
   def onRequest(handler: (Request) => Future[Response]) { responder = handler }
 
-  def onError(handler: PartialFunction[Throwable, Response]) { errorHandler = handler }
+  def onError(handler: PartialFunction[Throwable, Response]) { 
+    errorHandler = errorHandler orElse handler
+  }
 
   def reply(action: => Response) = Future(action)
 

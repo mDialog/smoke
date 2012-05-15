@@ -35,4 +35,3 @@ object ActorPoolExampleApp extends App with Smoke {
   }
 }
 
-

@@ -15,6 +15,7 @@ Make requests:
 
 	- Keep alives
 	- Graceful exit
+	- Testkit
 
 ### License
 

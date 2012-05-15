@@ -20,15 +20,13 @@ import smoke._
 
 class NettyServer(implicit config: Config) extends Server {
   val port = config.getInt("smoke.netty.port")
+  
   val handler = new NettyServerHandler(log)
   val piplineFactory = new NettyServerPipelineFactory(handler)
   
-  val bootstrap = new ServerBootstrap(
-    new NioServerSocketChannelFactory(
-      Executors.newCachedThreadPool,
-      Executors.newCachedThreadPool));  
-  bootstrap.setPipelineFactory(piplineFactory);  
-  bootstrap.bind(new InetSocketAddress(port));
+  val bootstrap = new ServerBootstrap(new NioServerSocketChannelFactory())  
+  bootstrap.setPipelineFactory(piplineFactory)
+  bootstrap.bind(new InetSocketAddress(port))
   
   println("Netty now accepting HTTP connections on port " + port.toString)
     
@@ -42,10 +40,10 @@ class NettyServerPipelineFactory(handler: NettyServerHandler)
   def getPipeline = {
     val p = Channels.pipeline
 
-    p.addLast("decoder", new HttpRequestDecoder())
+    p.addLast("decoder", new HttpRequestDecoder)
     p.addLast("aggregator", new HttpChunkAggregator(1048576))
-    p.addLast("encoder", new HttpResponseEncoder())
-    p.addLast("deflater", new HttpContentCompressor())
+    p.addLast("encoder", new HttpResponseEncoder)
+    p.addLast("deflater", new HttpContentCompressor)
     p.addLast("handler", handler)
     p
   }
@@ -84,6 +82,7 @@ class NettyServerHandler(log: (Request, Response) => Unit) extends SimpleChannel
   }
   
   override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) {
-    e.getChannel.close();
+    e.getCause.printStackTrace
+    e.getChannel.close
   }
 }
