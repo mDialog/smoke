@@ -1,7 +1,6 @@
 package smoke.examples
 
 import smoke._
-import smoke.netty.NettyServer
 
 import akka.actor._
 import akka.routing.RoundRobinRouter
@@ -19,7 +18,6 @@ class PooledResponder extends Actor {
 }
 
 object ActorPoolExampleApp extends App with Smoke {
-  val server = new NettyServer
   val pool = system.actorOf(Props[PooledResponder].withRouter(RoundRobinRouter(5)))
   
   onRequest (pool ? _ mapTo manifest[Response])

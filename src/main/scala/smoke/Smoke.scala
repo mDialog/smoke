@@ -10,6 +10,8 @@ import akka.actor.ActorSystem
 import akka.util.Timeout
 import akka.util.duration._
 
+import smoke.netty.NettyServer
+
 trait Smoke extends App {
   implicit val config = ConfigFactory.load()
   
@@ -18,7 +20,7 @@ trait Smoke extends App {
   
   implicit val timeout = Timeout(timeoutDuration milliseconds)
   implicit val dispatcher = system.dispatcher
-  
+    
   private var beforeFilter = { request: Request => request }
   private var responder = { request: Request => 
     Promise.successful(Response(ServiceUnavailable)).future
@@ -33,7 +35,7 @@ trait Smoke extends App {
       f recover(errorHandler) map afterFilter 
     }
   
-  val server: Server
+  val server = new NettyServer
   
   def before(filter: (Request) => Request) { beforeFilter = filter }
 

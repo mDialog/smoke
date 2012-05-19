@@ -1,7 +1,6 @@
 package smoke.examples
 
 import smoke._
-import smoke.netty.NettyServer
 
 import akka.actor._
 import akka.pattern.ask
@@ -16,7 +15,6 @@ class Responder extends Actor {
 }
 
 object ActorExampleApp extends App with Smoke {
-  val server = new NettyServer
   val actor = system.actorOf(Props[Responder])
   
   onRequest (actor ? _ mapTo manifest[Response])

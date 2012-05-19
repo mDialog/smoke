@@ -1,11 +1,8 @@
 package smoke.examples
 
 import smoke._
-import smoke.netty.NettyServer
 
-object BasicExampleApp extends App with Smoke {
-  val server = new NettyServer
-    
+object BasicExampleApp extends App with Smoke {    
   onRequest {
     case GET(Path("/test")) => reply {
       //Thread.sleep(1000)
