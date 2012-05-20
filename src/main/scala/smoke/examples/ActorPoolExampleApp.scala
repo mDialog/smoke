@@ -31,5 +31,14 @@ object ActorPoolExampleApp extends App with Smoke {
     val headers = response.headers + ("Server" -> "ActorPoolExampleApp/0.0.1")
     Response(response.status, headers, response.body)
   }
+  
+  beforeShutdown {
+    println("Shutdown in 5 s")
+    Thread.sleep(5000)
+  }
+  
+  afterShutdown {
+    println("Shutdown complete!")
+  }
 }
 

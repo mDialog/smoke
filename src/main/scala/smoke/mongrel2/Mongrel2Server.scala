@@ -22,6 +22,11 @@ class Mongrel2Server(implicit config: Config) extends Server {
     handler ! SetApplication(application)
   }
   
+  def stop() {
+    system.shutdown()
+    println("No longer resonding to Mongrel2 requests.")
+  }
+  
   case class SetApplication(application: (Request) => Future[Response])
 
   class Mongrel2Handler(receiveAddress: String, sendAddress: String) 

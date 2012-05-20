@@ -29,6 +29,11 @@ trait Smoke extends App {
   private var errorHandler: PartialFunction[Throwable, Response] = { 
     case t: Throwable => Response(InternalServerError) 
   }
+    
+  private var shutdownHooks = List(() => {
+    server.stop()
+    system.shutdown()
+  })
   
   private def application = 
     beforeFilter andThen responder andThen { f => 
@@ -46,6 +51,10 @@ trait Smoke extends App {
   def onError(handler: PartialFunction[Throwable, Response]) { 
     errorHandler = errorHandler orElse handler
   }
+  
+  def beforeShutdown(hook: => Unit) { shutdownHooks = hook _ :: shutdownHooks }
+
+  def afterShutdown(hook: => Unit) { shutdownHooks = shutdownHooks ::: List(hook _) }
 
   def reply(action: => Response) = Future(action)
 
@@ -56,6 +65,10 @@ trait Smoke extends App {
   abstract override def main(args: Array[String]) = {
     super.main(args)
     server.setApplication(application)
+    
+    Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {
+      def run = shutdownHooks foreach { hook => hook() }
+    }))
   }
 }
 
@@ -67,6 +80,8 @@ trait Server {
   }
   
   def setApplication(application: (Request) => Future[Response]): Unit
+  
+  def stop(): Unit
 }
 
 /**

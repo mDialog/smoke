@@ -26,13 +26,19 @@ class NettyServer(implicit config: Config) extends Server {
   
   val bootstrap = new ServerBootstrap(new NioServerSocketChannelFactory())  
   bootstrap.setPipelineFactory(piplineFactory)
-  bootstrap.bind(new InetSocketAddress(port))
+  
+  val channel = bootstrap.bind(new InetSocketAddress(port))
   
   println("Netty now accepting HTTP connections on port " + port.toString)
     
   def setApplication(application: (Request) => Future[Response]) {
     handler.setApplication(application)
-  }  
+  }
+  
+  def stop() {
+    channel.close.awaitUninterruptibly()
+    println("\nNetty no longer accepting HTTP connections")
+  }
 }
 
 class NettyServerPipelineFactory(handler: NettyServerHandler) 

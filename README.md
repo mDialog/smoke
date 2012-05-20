@@ -14,7 +14,6 @@ Make requests:
 ### TODO
 
 	- Keep alives
-	- Graceful exit
 	- Testkit
 
 ### License
