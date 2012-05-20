@@ -37,7 +37,7 @@ class NettyServer(implicit config: Config) extends Server {
   
   def stop() {
     channel.close.awaitUninterruptibly()
-    println("\nNetty no longer accepting HTTP connections")
+    println("Netty no longer accepting HTTP connections")
   }
 }
 
@@ -56,6 +56,9 @@ class NettyServerPipelineFactory(handler: NettyServerHandler)
 }
 
 class NettyServerHandler(log: (Request, Response) => Unit) extends SimpleChannelUpstreamHandler {
+  import HttpHeaders.Names._
+  import HttpHeaders.Values._
+  
   val executorService = Executors.newCachedThreadPool
   implicit val context = ExecutionContext.fromExecutor(executorService)
     
@@ -72,8 +75,16 @@ class NettyServerHandler(log: (Request, Response) => Unit) extends SimpleChannel
       headers foreach { pair => nettyResponse.setHeader(pair._1, pair._2) } 
       nettyResponse.setContent(ChannelBuffers.copiedBuffer(body, CharsetUtil.UTF_8))
       
+      if (request.keepAlive) {
+        nettyResponse.setHeader(CONTENT_LENGTH, nettyResponse.getContent.readableBytes);
+        nettyResponse.setHeader(CONNECTION, KEEP_ALIVE);
+      }
+      
       val channel = e.getChannel
-      channel.write(nettyResponse).addListener(ChannelFutureListener.CLOSE)
+      val future = channel.write(nettyResponse)
+      
+      if (!request.keepAlive) 
+        future.addListener(ChannelFutureListener.CLOSE)
       
       log(request, response)    
     }

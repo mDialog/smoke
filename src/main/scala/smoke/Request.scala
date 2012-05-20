@@ -10,6 +10,7 @@ trait Request {
   val host: String
   val port: Int
   val ip: String
+  val keepAlive: Boolean
   val headers: Map[String, String]
   
   val queryString: Option[String]

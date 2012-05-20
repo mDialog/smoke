@@ -13,6 +13,7 @@ case class Mongrel2Request(rawData: Array[Byte]) extends Request {
   val host = headers("host").split(":").head
   val port = headers("host").split(":").last.toInt
   val ip = headers("x-forwarded-for").split(",").head
+  val keepAlive = false
   val queryString = headers.get("QUERY")
 
   val contentType = headers.get("content-type")

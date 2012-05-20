@@ -3,7 +3,7 @@ Smoke
 
 *Simple, asynchronous HTTP using Akka*
 
-Run the sample app:
+Run one of the sample apps:
 
     sbt run
 
@@ -13,7 +13,6 @@ Make requests:
 
 ### TODO
 
-	- Keep alives
 	- Testkit
 
 ### License

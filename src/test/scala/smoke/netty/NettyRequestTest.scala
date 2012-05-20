@@ -6,19 +6,22 @@ import java.net.InetSocketAddress
 import org.jboss.netty.handler.codec.http.DefaultHttpRequest
 import org.jboss.netty.handler.codec.http.HttpVersion
 import org.jboss.netty.handler.codec.http.HttpMethod
+import org.jboss.netty.handler.codec.http.HttpHeaders
 import org.jboss.netty.buffer.ChannelBuffers
 import org.jboss.netty.util.CharsetUtil
 
 class NettyRequestTest extends FunSpec {
 
-  val uri = "http://test.mdialog.com:6768/video_assets/A134/streams/B987?latitude=45.432&longitude=47.334"
-  val nettyRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, uri) 
-  nettyRequest.setContent(ChannelBuffers.copiedBuffer("greeting+dr=hello+goodbye", CharsetUtil.UTF_8));
-  nettyRequest.setHeader("Content-Type", "application/x-www-form-urlencoded")
-  nettyRequest.setHeader("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_7) AppleWebKit/534.24 (KHTML, like Gecko) Chrome/11.0.696.57 Safari/534.24")
+  val address = new InetSocketAddress("23.2.1.4", 80)
   
   it("should parse from netty HttpRequest") {
-    val address = new InetSocketAddress("23.2.1.4", 80)
+    val uri = "http://test.mdialog.com:6768/video_assets/A134/streams/B987?latitude=45.432&longitude=47.334"
+
+    val nettyRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, uri) 
+    nettyRequest.setContent(ChannelBuffers.copiedBuffer("greeting+dr=hello+goodbye", CharsetUtil.UTF_8));
+    nettyRequest.setHeader("Content-Type", "application/x-www-form-urlencoded")
+    nettyRequest.setHeader("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_7) AppleWebKit/534.24 (KHTML, like Gecko) Chrome/11.0.696.57 Safari/534.24")
+
     val request = NettyRequest(address, nettyRequest)
         
     assert(request.method === "POST")
@@ -40,4 +43,25 @@ class NettyRequestTest extends FunSpec {
     assert(request.params.get("greeting dr") === Some("hello goodbye"))
   }
   
+  describe("keepAlive") {
+    it("should return false if request is not keep alive") {
+      val nettyRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, 
+                                                HttpMethod.POST,
+                                                "http://test.com")
+      HttpHeaders.setKeepAlive(nettyRequest, false) 
+      val request = NettyRequest(address, nettyRequest)
+      
+      assert(!request.keepAlive)
+    }
+    
+    it("should return true if request is keep alive") {
+      val nettyRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, 
+                                                HttpMethod.POST,
+                                                "http://test.com") 
+      HttpHeaders.setKeepAlive(nettyRequest, true)
+      val request = NettyRequest(address, nettyRequest)
+      
+      assert(request.keepAlive)
+    }
+  }
 }
