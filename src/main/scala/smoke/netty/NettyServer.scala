@@ -12,9 +12,7 @@ import org.jboss.netty.handler.codec.http._
 import org.jboss.netty.channel._
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory
 import org.jboss.netty.buffer.ChannelBuffers
-import org.jboss.netty.buffer.ChannelBuffer
 import org.jboss.netty.util.CharsetUtil
-import org.jboss.netty.handler.stream.ChunkedWriteHandler
 
 import collection.JavaConversions._
 
