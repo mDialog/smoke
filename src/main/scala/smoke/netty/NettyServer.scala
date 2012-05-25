@@ -12,7 +12,9 @@ import org.jboss.netty.handler.codec.http._
 import org.jboss.netty.channel._
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory
 import org.jboss.netty.buffer.ChannelBuffers
+import org.jboss.netty.buffer.ChannelBuffer
 import org.jboss.netty.util.CharsetUtil
+import org.jboss.netty.handler.stream.ChunkedWriteHandler
 
 import collection.JavaConversions._
 
@@ -67,14 +69,18 @@ class NettyServerHandler(log: (Request, Response) => Unit) extends SimpleChannel
     val request = NettyRequest(address, e.getMessage.asInstanceOf[HttpRequest])
     
     application(request) map { response =>
-      val status = HttpResponseStatus.valueOf(response.statusCode)
-      val headers = response.headers
-      val body = response.body
+    val status = HttpResponseStatus.valueOf(response.statusCode)
+    val headers = response.headers
+    val body = response.body
       
-      val nettyResponse = new DefaultHttpResponse(HttpVersion.HTTP_1_1, status)
-      headers foreach { pair => nettyResponse.setHeader(pair._1, pair._2) } 
-      nettyResponse.setContent(ChannelBuffers.copiedBuffer(body, CharsetUtil.UTF_8))
-      
+    val nettyResponse = new DefaultHttpResponse(HttpVersion.HTTP_1_1, status)
+    headers foreach { pair => nettyResponse.setHeader(pair._1, pair._2) }
+
+    body match {
+      case utf8: UTF8Data => nettyResponse.setContent(ChannelBuffers.copiedBuffer(utf8.data, CharsetUtil.UTF_8))
+      case raw: RawData => nettyResponse.setContent(ChannelBuffers.copiedBuffer(raw.data))
+    }
+
       if (request.keepAlive) {
         nettyResponse.setHeader(CONTENT_LENGTH, nettyResponse.getContent.readableBytes);
         nettyResponse.setHeader(CONNECTION, KEEP_ALIVE);
@@ -85,11 +91,11 @@ class NettyServerHandler(log: (Request, Response) => Unit) extends SimpleChannel
       
       if (!request.keepAlive) 
         future.addListener(ChannelFutureListener.CLOSE)
-      
-      log(request, response)    
+        
+      log(request, response)
     }
-  } 
-  
+  }
+
   var application: (Request) => Future[Response] = { request =>
     Promise.successful(Response(ServiceUnavailable))
   }  

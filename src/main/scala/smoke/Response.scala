@@ -1,8 +1,16 @@
 package smoke
 
+trait ResponseData
+case class UTF8Data(data: String) extends ResponseData
+case class RawData(data: Array[Byte]) extends ResponseData
+
+object ResponseData {
+  implicit def str2UTF8Data(str: String) = UTF8Data(str)
+}
+
 case class Response(status: ResponseStatus,
                     headers: Map[String, String] = Map.empty,
-                       body: String = "") {  
+                    body: ResponseData = "" ) {
   def statusCode = status.code
   def statusMessage = status.message
   
@@ -13,7 +21,11 @@ case class Response(status: ResponseStatus,
     case Nil => ""
     case h => h.mkString("", "\r\n", "\r\n")
   }
-  private def messageBody = if(body.isEmpty) "" else "\r\n" + body
+  private def messageBody = body match {
+    case utf8: UTF8Data => if(utf8.data.isEmpty) "" else "\r\n" + utf8.data
+    //use a fixed length encoding for raw data
+    case raw: RawData => new String(raw.data, "ISO-8859-1")
+  }
 }
 
 case class ResponseStatus(code: Int, message: String)

@@ -4,28 +4,25 @@ import smoke._
 
 object FileApp extends App with Smoke {    
   onRequest {
-    case GET(Path("/test")) => reply {
-      //Thread.sleep(1000)
-      Response(Ok, body="It took me a second to build this response.\n")
-    }
     case GET(Path(path) & Path(FileExtension(extension)) ) => reply {
+      //serve files in the resources folder
       val fullPath = "resources" + path
-      val contentType = extension match {
-        case "gif" => "image/gif"
-        case "jpg" | "jpeg" => "image/jpeg"
-        case _ => null
-      }
 
       try {
-        val source = scala.io.Source.fromFile(fullPath)
-        val byteArray = source.map(_.toByte).toArray
-        source.close()
+        import java.io.{File, FileInputStream}
+        val file = new File(fullPath)
+        val in = new FileInputStream(file)
+        val bytes = new Array[Byte](file.length.toInt)
+        in.read(bytes)
+        in.close()
+        
         Response(Ok, 
-          body = RawData(byteArray),
-          headers = contentType match {
-            case null => Map()
-            case other => Map("Content-Type" -> other)
-          })
+          body = RawData(bytes),
+          headers = Map("Content-Type" -> (extension match {
+            case "gif" => "image/gif"
+            case "jpg" | "jpeg" => "image/jpeg"
+            case _ => "application/octet-stream"
+          })))
       } catch {
         case fnf: java.io.FileNotFoundException => Response(NotFound)
       }
