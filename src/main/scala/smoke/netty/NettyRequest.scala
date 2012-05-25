@@ -13,7 +13,7 @@ case class NettyRequest(address: SocketAddress, nettyRequest: HttpRequest)
   private val u = new URI(nettyRequest.getUri)
     
   val method = nettyRequest.getMethod.toString
-  val uri = nettyRequest.getUri
+  val uri = new URI(nettyRequest.getUri)
   val path = u.getPath
   val hostWithPort = u.getHost + ":" + u.getPort
   val host = u.getHost

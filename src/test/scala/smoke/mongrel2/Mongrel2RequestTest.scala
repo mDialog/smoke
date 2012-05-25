@@ -1,5 +1,6 @@
 package smoke.mongrel2
 
+import java.net.URI
 import org.scalatest.FunSpec
 import io.Source
 
@@ -34,7 +35,7 @@ class Mongrel2RequestTest extends FunSpec {
     assert(request.connection === "57")
         
     assert(request.method === "POST")
-    assert(request.uri === "/video_assets/A134/streams/B987?latitude=45.432&longitude=47.334")
+    assert(request.uri === new URI("/video_assets/A134/streams/B987?latitude=45.432&longitude=47.334"))
     assert(request.path === "/video_assets/A134/streams/B987")
     assert(request.hostWithPort === "test.mdialog.com:6767")
     assert(request.host === "test.mdialog.com")

@@ -1,10 +1,10 @@
 package smoke
 
-import java.net.URLDecoder
+import java.net.{ URI, URLDecoder }
 
 trait Request {
   val method: String
-  val uri: String
+  val uri: URI
   val path: String
   val hostWithPort: String
   val host: String
