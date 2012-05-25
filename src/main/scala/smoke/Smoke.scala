@@ -107,11 +107,19 @@ object Params {
   def unapply(req: Request) = Some(req.params)
 }
 
+object FileExtension {
+  def unapply(path: String): Option[String] = path.split('.').toList match {
+    case List() => None
+    case all => Some(all.last)
+  }
+}
+
 class Method(method: String) {
   def unapply(req: Request) =
     if (req.method.equalsIgnoreCase(method)) Some(req)
     else None
 }
+
 
 object GET extends Method("GET")
 object POST extends Method("POST")
