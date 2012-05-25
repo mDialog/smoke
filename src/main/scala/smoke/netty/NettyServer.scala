@@ -69,29 +69,30 @@ class NettyServerHandler(log: (Request, Response) => Unit) extends SimpleChannel
     val request = NettyRequest(address, e.getMessage.asInstanceOf[HttpRequest])
     
     application(request) map { response =>
-    val status = HttpResponseStatus.valueOf(response.statusCode)
-    val headers = response.headers
-    val body = response.body
-      
-    val nettyResponse = new DefaultHttpResponse(HttpVersion.HTTP_1_1, status)
-    headers foreach { pair => nettyResponse.setHeader(pair._1, pair._2) }
+      val status = HttpResponseStatus.valueOf(response.statusCode)
+      val headers = response.headers
+      val body = response.body
+      val nettyResponse = new DefaultHttpResponse(HttpVersion.HTTP_1_1, status)
 
-    body match {
-      case utf8: UTF8Data => nettyResponse.setContent(ChannelBuffers.copiedBuffer(utf8.data, CharsetUtil.UTF_8))
-      case raw: RawData => nettyResponse.setContent(ChannelBuffers.copiedBuffer(raw.data))
-    }
+      body match {
+        case utf8: UTF8Data => nettyResponse.setContent(ChannelBuffers.copiedBuffer(utf8.data, CharsetUtil.UTF_8))
+        case raw: RawData => nettyResponse.setContent(ChannelBuffers.copiedBuffer(raw.data))
+      }
 
       if (request.keepAlive) {
         nettyResponse.setHeader(CONTENT_LENGTH, nettyResponse.getContent.readableBytes);
         nettyResponse.setHeader(CONNECTION, KEEP_ALIVE);
       }
       
+      headers foreach { pair => nettyResponse.setHeader(pair._1, pair._2) }
+        
       val channel = e.getChannel
       val future = channel.write(nettyResponse)
       
-      if (!request.keepAlive) 
+      if (!request.keepAlive || !HttpHeaders.isKeepAlive(nettyResponse)) {
         future.addListener(ChannelFutureListener.CLOSE)
-        
+      }
+          
       log(request, response)
     }
   }
