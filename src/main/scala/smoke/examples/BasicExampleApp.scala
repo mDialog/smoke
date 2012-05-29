@@ -2,10 +2,10 @@ package smoke.examples
 
 import smoke._
 
-object BasicExampleApp extends App with Smoke {    
+object BasicExampleApp extends Smoke {    
   onRequest {
-    case GET(Path("/test")) => reply {
-      //Thread.sleep(1000)
+    case GET(Path("/example")) => reply {
+      Thread.sleep(1000)
       Response(Ok, body="It took me a second to build this response.\n")
     }
     case _ => reply(Response(NotFound))

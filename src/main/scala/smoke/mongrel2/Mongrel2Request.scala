@@ -1,6 +1,7 @@
 package smoke.mongrel2
 
 import util.parsing.json.JSON
+import java.net.URI
 import smoke.Request
 
 case class Mongrel2Request(rawData: Array[Byte]) extends Request {
@@ -8,7 +9,7 @@ case class Mongrel2Request(rawData: Array[Byte]) extends Request {
   
   val (sender, connection, path, headers, body) = parse(message)    
   val method = headers("METHOD")
-  val uri = headers("URI")
+  val uri = new URI(headers("URI"))
   val hostWithPort = headers("host")
   val host = headers("host").split(":").head
   val port = headers("host").split(":").last.toInt

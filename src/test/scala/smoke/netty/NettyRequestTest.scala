@@ -3,6 +3,8 @@ package smoke.netty
 import org.scalatest.FunSpec
 
 import java.net.InetSocketAddress
+import java.net.URI
+
 import org.jboss.netty.handler.codec.http.DefaultHttpRequest
 import org.jboss.netty.handler.codec.http.HttpVersion
 import org.jboss.netty.handler.codec.http.HttpMethod
@@ -25,7 +27,7 @@ class NettyRequestTest extends FunSpec {
     val request = NettyRequest(address, nettyRequest)
         
     assert(request.method === "POST")
-    assert(request.uri === "http://test.mdialog.com:6768/video_assets/A134/streams/B987?latitude=45.432&longitude=47.334")
+    assert(request.uri === new URI("http://test.mdialog.com:6768/video_assets/A134/streams/B987?latitude=45.432&longitude=47.334"))
     assert(request.path === "/video_assets/A134/streams/B987")
     assert(request.hostWithPort === "test.mdialog.com:6768")
     assert(request.host === "test.mdialog.com")

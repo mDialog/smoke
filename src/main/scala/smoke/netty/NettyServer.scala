@@ -2,9 +2,8 @@ package smoke.netty
 
 import com.typesafe.config.Config  
 import akka.actor._  
-import akka.dispatch.{ ExecutionContext, Future, Promise }  
+import akka.dispatch.{ Future, Promise }  
 
-import java.util.concurrent.Executors
 import java.net.InetSocketAddress
 
 import org.jboss.netty.bootstrap.ServerBootstrap
@@ -18,9 +17,9 @@ import collection.JavaConversions._
 
 import smoke._
 
-class NettyServer(implicit config: Config) extends Server {
+class NettyServer(implicit config: Config, system: ActorSystem) extends Server {
   val port = config.getInt("smoke.netty.port")
-  
+
   val handler = new NettyServerHandler(log)
   val piplineFactory = new NettyServerPipelineFactory(handler)
   
@@ -55,12 +54,11 @@ class NettyServerPipelineFactory(handler: NettyServerHandler)
   }
 }
 
-class NettyServerHandler(log: (Request, Response) => Unit) extends SimpleChannelUpstreamHandler {
+class NettyServerHandler(log: (Request, Response) => Unit)(implicit system: ActorSystem) extends SimpleChannelUpstreamHandler {
   import HttpHeaders.Names._
   import HttpHeaders.Values._
   
-  val executorService = Executors.newCachedThreadPool
-  implicit val context = ExecutionContext.fromExecutor(executorService)
+  implicit val dispatcher = system.dispatcher
     
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
     val address = e.getRemoteAddress
@@ -104,7 +102,6 @@ class NettyServerHandler(log: (Request, Response) => Unit) extends SimpleChannel
   }
   
   override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) {
-    e.getCause.printStackTrace
     e.getChannel.close
   }
 }

@@ -14,12 +14,11 @@ import smoke.netty.NettyServer
 
 trait Smoke extends App {
   implicit val config = ConfigFactory.load()
-  
-  val system = ActorSystem("Smoke", config)
-  val timeoutDuration = config.getInt("smoke.timeout")
-  
-  implicit val timeout = Timeout(timeoutDuration milliseconds)
+  implicit val system = ActorSystem("Smoke", config)
   implicit val dispatcher = system.dispatcher
+  
+  val timeoutDuration: Long = config.getMilliseconds("smoke.timeout")
+  implicit val timeout = Timeout(timeoutDuration milliseconds)
     
   private var beforeFilter = { request: Request => request }
   private var responder = { request: Request => 
@@ -87,7 +86,7 @@ trait Server {
 /**
  * Request Extractors
  *
- * Inspired by Play2-mini (https://github.com/typesafehub/play2-mini)
+ * Inspired lifted from Play2 Mini (https://github.com/typesafehub/play2-mini)
  * and Unfiltered (http://unfiltered.databinder.net/)
  */
  

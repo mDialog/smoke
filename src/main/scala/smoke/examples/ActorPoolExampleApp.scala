@@ -10,15 +10,15 @@ object NotFoundException extends Exception("Not found")
 
 class PooledResponder extends Actor {
   def receive = {
-    case GET(Path("/test")) => 
+    case GET(Path("/example")) => 
       Thread.sleep(1000)
       sender ! Response(Ok, body="It took me a second to build this response.\n")
     case _ => sender ! Status.Failure(NotFoundException)
   }
 }
 
-object ActorPoolExampleApp extends App with Smoke {
-  val pool = system.actorOf(Props[PooledResponder].withRouter(RoundRobinRouter(5)))
+object ActorPoolExampleApp extends Smoke {
+  val pool = system.actorOf(Props[PooledResponder].withRouter(RoundRobinRouter(200)))
   
   onRequest (pool ? _ mapTo manifest[Response])
   
