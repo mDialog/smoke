@@ -26,7 +26,8 @@ trait Smoke extends App {
   }
   private var afterFilter = { response: Response => response }
   private var errorHandler: PartialFunction[Throwable, Response] = { 
-    case t: Throwable => Response(InternalServerError) 
+    case t: Throwable => Response(InternalServerError, body = t.getMessage + "\n" + 
+      t.getStackTrace.mkString("\n"))
   }
     
   private var shutdownHooks = List(() => {
@@ -48,7 +49,7 @@ trait Smoke extends App {
   def onRequest(handler: (Request) => Future[Response]) { responder = handler }
 
   def onError(handler: PartialFunction[Throwable, Response]) { 
-    errorHandler = errorHandler orElse handler
+    errorHandler = handler orElse errorHandler
   }
   
   def beforeShutdown(hook: => Unit) { shutdownHooks = hook _ :: shutdownHooks }
