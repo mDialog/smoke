@@ -6,6 +6,8 @@ import org.jboss.netty.handler.codec.http.HttpRequest
 import org.jboss.netty.handler.codec.http.HttpHeaders
 import org.jboss.netty.util.CharsetUtil
 import java.net.URI
+import collection.JavaConversions._
+
 import smoke.Request
 
 case class NettyRequest(address: SocketAddress, nettyRequest: HttpRequest) 
@@ -20,7 +22,7 @@ case class NettyRequest(address: SocketAddress, nettyRequest: HttpRequest)
   val port = u.getPort
   val ip = address.asInstanceOf[InetSocketAddress].getAddress.getHostAddress
   val keepAlive = HttpHeaders.isKeepAlive(nettyRequest)
-  val headers = Map.empty[String, String]
+  val headers = nettyRequest.getHeaders map { e => (e.getKey, e.getValue) } toMap
   
   val queryString = if (u.getRawQuery == null) None else Some(u.getRawQuery)
   

@@ -35,6 +35,11 @@ class NettyRequestTest extends FunSpec {
     assert(request.ip === "23.2.1.4")
     assert(request.queryString === Some("latitude=45.432&longitude=47.334"))
     
+    assert(request.headers === Map(
+      "Content-Type" -> "application/x-www-form-urlencoded",
+      "user-agent" -> "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_7) AppleWebKit/534.24 (KHTML, like Gecko) Chrome/11.0.696.57 Safari/534.24"
+    ))
+    
     assert(request.contentType === Some("application/x-www-form-urlencoded"))
     assert(request.userAgent === Some("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_7) AppleWebKit/534.24 (KHTML, like Gecko) Chrome/11.0.696.57 Safari/534.24"))
 
