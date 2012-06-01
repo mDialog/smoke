@@ -3,10 +3,12 @@ package smoke
 case class Response(status: ResponseStatus,
                     headers: Map[String, String] = Map.empty,
                        body: String = "") {  
-  def statusCode = status.code
-  def statusMessage = status.message
+  val statusCode = status.code
+  val statusMessage = status.message
   
   def toMessage = messageStatus + messageHeaders + messageBody
+  
+  val contentLength = body.getBytes.length
   
   private def messageStatus = "HTTP/1.1 " + status.code + " " + status.message + "\r\n"
   private def messageHeaders = headers map { t => t._1 + ": " + t._2 } match {

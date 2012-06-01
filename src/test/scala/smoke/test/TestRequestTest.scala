@@ -5,6 +5,14 @@ import java.net.URI
 
 class TestRequestTest extends FunSpec {
   
+  describe("version") {
+    it("should return HTTP 1.1 version") {
+      val request = TestRequest("http://test.host:8080/some/path")
+    
+      assert(request.version === "HTTP/1.1")      
+    }
+  }
+  
   describe("method") {
     it("should be GET by default") {
       val request = TestRequest("http://test.host/some/path")
@@ -158,6 +166,21 @@ class TestRequestTest extends FunSpec {
       val request = TestRequest("http://test.host/path?val=some+value",
                                 body = "some body")
       assert(request.body == "some body")
+    }
+  }
+  
+  describe("contentLength") {
+    it("should return request body size when present") {
+      val request = TestRequest("http://test.host/path?val=some+value",
+                                body = "test-test")
+      
+      assert(request.contentLength === 9)
+    }
+    
+    it("should return 0 when request body not present") {
+      val request = TestRequest("http://test.host/path?val=some+value")
+      
+      assert(request.contentLength === 0)
     }
   }
   

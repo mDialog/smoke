@@ -75,8 +75,10 @@ trait Smoke extends App {
 trait Server {
   val log = { (request: Request, response: Response) =>
     val dateFormat = new SimpleDateFormat("dd/MMM/yyyy:HH:mm:ss Z");
-    println("[" + dateFormat.format(new Date()) + "] " + request.ip + " " +
-            response.statusCode + " " + request.path)
+    println(request.ip + " - - " + 
+            "[" + dateFormat.format(new Date()) + "] " +
+            "\"" + request.method + " " + request.path + " " + request.version + "\" " +
+            response.statusCode + " " + response.contentLength)
   }
   
   def setApplication(application: (Request) => Future[Response]): Unit

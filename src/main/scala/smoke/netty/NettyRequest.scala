@@ -13,7 +13,8 @@ import smoke.Request
 case class NettyRequest(address: SocketAddress, nettyRequest: HttpRequest) 
   extends Request {
   private val u = new URI(nettyRequest.getUri)
-    
+  
+  val version = nettyRequest.getProtocolVersion.toString
   val method = nettyRequest.getMethod.toString
   val uri = new URI(nettyRequest.getUri)
   val path = u.getPath
@@ -51,4 +52,5 @@ case class NettyRequest(address: SocketAddress, nettyRequest: HttpRequest)
   val params = queryParams ++ formParams
   
   val body = nettyRequest.getContent.toString(CharsetUtil.UTF_8)
+  val contentLength = nettyRequest.getContent.readableBytes
 }

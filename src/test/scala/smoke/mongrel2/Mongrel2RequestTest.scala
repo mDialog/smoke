@@ -7,7 +7,7 @@ import io.Source
 class Mongrel2RequestTest extends FunSpec {
   // Message Fixture (new lines added for readability):
   // 54c6755b-9628-40a4-9a2d-cc82a816345e 57 /A134/B987 
-  // 751:{
+  // 669:{
   //   "PATH":"/A134/B987",
   //   "accept-language":"en-US,en;q=0.8",
   //   "user-agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_7) AppleWebKit/534.24 (KHTML, like Gecko) Chrome/11.0.696.57 Safari/534.24",
@@ -47,6 +47,7 @@ class Mongrel2RequestTest extends FunSpec {
     assert(request.userAgent === Some("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_7) AppleWebKit/534.24 (KHTML, like Gecko) Chrome/11.0.696.57 Safari/534.24"))
 
     assert(request.body === "greeting=hello+goodbye")
+    assert(request.contentLength === 22)
 
     assert(request.params.get("someVal") === Some("45.432"))
     assert(request.params.get("other val") === Some("47.334"))

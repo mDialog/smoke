@@ -36,7 +36,7 @@ By default, Smoke relies on [Netty](http://netty.io) to for asynchronous HTTP co
 
 Smoke provides a DSL for building HTTP services using a simple request/response pattern, where each response is provided as an Akka Future. Akka provides a powerful toolkit to control the creation and execution of Futures; spend some time with that project's [excellent documentation](http://akka.io/docs) to get a feel for how it works.
 
-By mixing the Smoke trait into your app you get access to the tools necessary to build a robust Akka-based application. That includes to an `ActorSystem`, `Dispatcher`, default timeout and `Config` object. 
+By extending the Smoke trait, you get access to the tools necessary to build a robust Akka-based application. That includes to an `ActorSystem`, `Dispatcher`, default timeout and `Config` object. 
 
     implicit val config = ConfigFactory.load()
     implicit val system = ActorSystem("Smoke", config)

@@ -14,7 +14,23 @@ import org.jboss.netty.util.CharsetUtil
 
 class NettyRequestTest extends FunSpec {
   val address = new InetSocketAddress("23.2.1.4", 80)
-  
+
+  describe("version") {
+    it("should return HTTP 1.1 version") {
+      val rawRequest = new DefaultHttpRequest(HTTP_1_1, GET, "http://test.host")
+      val request = NettyRequest(address, rawRequest)
+    
+      assert(request.version === "HTTP/1.1")      
+    }
+    
+    it("should return HTTP 1.0 version") {
+      val rawRequest = new DefaultHttpRequest(HTTP_1_0, GET, "http://test.host")
+      val request = NettyRequest(address, rawRequest)
+    
+      assert(request.version === "HTTP/1.0")      
+    }
+  }
+    
   describe("method") {
     it("should return GET") {
       val rawRequest = new DefaultHttpRequest(HTTP_1_1, GET, "http://test.host")
@@ -113,7 +129,7 @@ class NettyRequestTest extends FunSpec {
   }
   
   describe("ip") {
-    it("should return request addess IP") {
+    it("should return request address IP") {
       val rawRequest = new DefaultHttpRequest(HTTP_1_1, GET, "http://test.host") 
       val request = NettyRequest(new InetSocketAddress("23.2.1.4", 80), rawRequest)
      
@@ -228,6 +244,23 @@ class NettyRequestTest extends FunSpec {
       
       val request = NettyRequest(address, rawRequest)
       assert(request.body === "")
+    }
+  }
+  
+  describe("contentLength") {
+    it("should return request body size when present") {
+      val rawRequest = new DefaultHttpRequest(HTTP_1_1, GET, "http://test.host")
+      rawRequest.setContent(ChannelBuffers.copiedBuffer("test-test", CharsetUtil.UTF_8));
+      
+      val request = NettyRequest(address, rawRequest)
+      assert(request.contentLength === 9)
+    }
+    
+    it("should return 0 when request body not present") {
+      val rawRequest = new DefaultHttpRequest(HTTP_1_1, GET, "http://test.host")
+      
+      val request = NettyRequest(address, rawRequest)
+      assert(request.contentLength === 0)
     }
   }
   

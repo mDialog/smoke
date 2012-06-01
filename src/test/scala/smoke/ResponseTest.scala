@@ -6,8 +6,8 @@ import io.Source
 class ResponseTest extends FunSpec {
   describe("statusCode") {
     it("should return status code") {
-     assert(Response(Ok).statusCode == Ok.code) 
-     assert(Response(NotFound).statusCode == NotFound.code) 
+      assert(Response(Ok).statusCode == Ok.code) 
+      assert(Response(NotFound).statusCode == NotFound.code) 
     }
   }
   
@@ -15,6 +15,17 @@ class ResponseTest extends FunSpec {
     it("should return status message") {
      assert(Response(Ok).statusMessage == Ok.message) 
      assert(Response(NotFound).statusMessage == NotFound.message) 
+    }
+  }
+  
+  describe("contentLength") {
+    it("should return 0 when body is not present") {
+      assert(Response(Ok).contentLength === 0) 
+    }
+
+    it("should return content length in bytes when body present") {
+      val response = Response(Ok, body = "test+test")
+      assert(response.contentLength === 9) 
     }
   }
   
@@ -49,5 +60,6 @@ class ResponseTest extends FunSpec {
       assert(response.toMessage === expected)
     }
   }
+
 
 }

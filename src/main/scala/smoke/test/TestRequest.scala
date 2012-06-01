@@ -9,6 +9,7 @@ case class TestRequest(uriString: String,
                        headers: Map[String, String] = Map.empty,
                        body: String = "",
                        keepAlive: Boolean = true) extends Request {
+  val version = "HTTP/1.1"
   val uri = new URI(uriString)
   val path = uri.getPath
   val ip = "0.0.0.0"
@@ -36,4 +37,6 @@ case class TestRequest(uriString: String,
   }
   
   val params: Map[String, String] = queryParams ++ formParams
+  
+  val contentLength = body.getBytes.length
 }

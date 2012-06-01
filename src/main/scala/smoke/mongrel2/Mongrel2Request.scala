@@ -7,7 +7,8 @@ import smoke.Request
 case class Mongrel2Request(rawData: Array[Byte]) extends Request {
   private val message = new String(rawData, "UTF-8")
   
-  val (sender, connection, path, headers, body) = parse(message)    
+  val (sender, connection, path, headers, body) = parse(message)
+  val version = "HTTP/1.1"
   val method = headers("METHOD")
   val uri = new URI(headers("URI"))
   val hostWithPort = headers("host")
@@ -26,7 +27,9 @@ case class Mongrel2Request(rawData: Array[Byte]) extends Request {
     case None => Map.empty[String, String]
   }
   val params = queryParams ++ formParams
-      
+  
+  val contentLength = body.getBytes.length
+  
   private def parse(message: String) = {
     val Array(sender, connection, path, rest) = message.split(" ", 4)   
     val (rawHeaders, bodyNetstring) = parseNetstring(rest)

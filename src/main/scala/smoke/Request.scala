@@ -3,6 +3,7 @@ package smoke
 import java.net.{ URI, URLDecoder }
 
 trait Request {
+  val version: String
   val method: String
   val uri: URI
   val path: String
@@ -22,6 +23,8 @@ trait Request {
   val params: Map[String, String]
   
   val body: String  
+  
+  val contentLength: Int
   
   override def toString = method + " - " + path + "-" + headers + "-" + "\n" + body
 
