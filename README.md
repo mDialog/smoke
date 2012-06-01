@@ -184,8 +184,8 @@ There are a few of configuration options. Like Akka, Smoke uses [Typesafe Config
         recvAddress = "ipc:///tmp/SmokeMongrel2Request"
         sendAddress = "ipc:///tmp/SmokeMongrel2Response"
       } 
-    } 
-
+    }
+    
 ## Try it out
 
 Clone the repository, run one of the sample apps:
@@ -195,10 +195,27 @@ Clone the repository, run one of the sample apps:
 Make requests:
 
     curl -i http://localhost:7771/example
+    
+## Testing
+
+Unit testing components of your application that interact with Smoke is made easier using the provided TestRequest class, which inherits from the Request trait.
+
+    case class TestRequest(uriString: String,
+                               method: String = "GET",
+                               headers: Map[String, String] = Map.empty,
+                               body: String = "",
+                               keepAlive: Boolean = true) extends Request
+
+
+Using this class along with the tools provided by Akka allows testing of your application's responder function. It looks like this:
+
+    import smoke.test.TestRequest
+
+    val request = TestRequest("http://test.host/some/path")
+
 
 ## TODO
 
-  - Testkit
   - SSL support (in the meantime, we use [stunnel](http://www.stunnel.org/))
 
 ## License
@@ -207,9 +224,9 @@ This project is released under the Apache License v2, for more details see the '
 
 ## Contributing
 
-Fork the projects, add tests if possible and send a pull request.
+Fork the project, add tests if possible and send a pull request.
 
-Suggestion areas of contribution: more Request extractors, better documentation, additional server backends, DSL improvements.
+Unsure of where to start? Pick a TODO, or consider one of the following contributions: more Request extractors, better documentation, additional server backends, DSL improvements.
 
 ## Contributors
 
