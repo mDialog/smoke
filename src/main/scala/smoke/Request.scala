@@ -8,7 +8,7 @@ trait Request {
   val path: String
   val hostWithPort: String
   val host: String
-  val port: Int
+  val port: Option[Int]
   val ip: String
   val keepAlive: Boolean
   val headers: Map[String, String]

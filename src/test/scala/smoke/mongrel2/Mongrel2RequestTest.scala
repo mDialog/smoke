@@ -39,7 +39,7 @@ class Mongrel2RequestTest extends FunSpec {
     assert(request.path === "/A134/B987")
     assert(request.hostWithPort === "test.mdialog.com:6767")
     assert(request.host === "test.mdialog.com")
-    assert(request.port === 6767)
+    assert(request.port === Some(6767))
     assert(request.ip === "127.0.0.1")
     assert(request.queryString === Some("someVal=45.432&other+val=47.334"))
     

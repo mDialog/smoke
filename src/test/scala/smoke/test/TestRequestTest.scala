@@ -41,14 +41,24 @@ class TestRequestTest extends FunSpec {
   describe("port") {
     it("should extract port from URI") {
       val request = TestRequest("http://test.host:8080/some/path")
-      assert(request.port === 8080)
+      assert(request.port === Some(8080))
+    }
+    
+    it("should not extract port when not present") {
+      val request = TestRequest("http://test.host/some/path")
+      assert(request.port === None)
     }
   }
   
   describe("hostWithPort") {
-    it("should compose form host and port") {
+    it("should compose from host and port when port is present") {
       val request = TestRequest("http://test.host:8080/some/path")
       assert(request.hostWithPort === "test.host:8080")
+    }
+
+    it("should compose from just host when port is not present") {
+      val request = TestRequest("http://test.host/some/path")
+      assert(request.hostWithPort === "test.host")
     }
   }
   

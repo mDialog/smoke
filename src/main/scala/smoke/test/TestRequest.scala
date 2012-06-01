@@ -14,8 +14,8 @@ case class TestRequest(uriString: String,
   val ip = "0.0.0.0"
   
   val host = uri.getHost
-  val port = uri.getPort
-  val hostWithPort = host + ":" + port.toString
+  val port = if (uri.getPort >= 0) Some(uri.getPort) else None
+  val hostWithPort = host + (port map (":" + _.toString) getOrElse(""))
 
   val queryString: Option[String] = uri.getRawQuery match {
     case q: String => Some(q)
