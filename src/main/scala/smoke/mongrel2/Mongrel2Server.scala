@@ -12,18 +12,29 @@ class Mongrel2Server(implicit config: Config, system: ActorSystem) extends Serve
   val recvAddress = config.getString("smoke.mongrel2.recvAddress")
   val sendAddress = config.getString("smoke.mongrel2.sendAddress")
   
-  val handler = system.actorOf(Props(new Mongrel2Handler(recvAddress, sendAddress)))
-  
-  println("Receiving requests on " + recvAddress)
-  println("Sending responses on " + sendAddress)
+  private var _application: (Request) => Future[Response] = _
+  private var handlerOption: Option[ActorRef] = None
   
   def setApplication(application: (Request) => Future[Response]) {
-    handler ! SetApplication(application)
+    _application = application
+  }
+  
+  def start() {
+    if (handlerOption.isEmpty) {
+      val handlerProps = Props(new Mongrel2Handler(recvAddress, sendAddress))
+      handlerOption = Some(system.actorOf(handlerProps))
+      handlerOption map (_ ! SetApplication(_application))
+    
+      println("Receiving requests on " + recvAddress)
+      println("Sending responses on " + sendAddress)
+    }
   }
   
   def stop() {
-    system.shutdown()
-    println("No longer resonding to Mongrel2 requests.")
+    handlerOption map { handler => 
+      handler ! PoisonPill
+      println("No longer resonding to Mongrel2 requests.")
+    }
   }
   
   case class SetApplication(application: (Request) => Future[Response])

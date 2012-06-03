@@ -22,7 +22,7 @@ case class TestRequest(uriString: String,
     case q: String => Some(q)
     case null => None
   }
-
+    
   val contentType: Option[String] = headers.get("Content-Type")
   val userAgent: Option[String] = headers.get("User-Agent")
 

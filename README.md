@@ -207,12 +207,43 @@ Unit testing components of your application that interact with Smoke is made eas
                                keepAlive: Boolean = true) extends Request
 
 
-Using this class along with the tools provided by Akka allows testing of your application's responder function. It looks like this:
+Using this class along with the tools provided by Akka allows testing of your application's responder function.
 
-    import smoke.test.TestRequest
+You can test your app itself by simply initializing and shutting down your app inside a test suite, and invoking the application method directly. 
 
-    val request = TestRequest("http://test.host/some/path")
+    import org.scalatest.{ FunSpec, BeforeAndAfterAll }
 
+    import akka.dispatch.Await
+    import akka.util.duration._
+
+    import smoke._
+    import smoke.test._
+
+    class BasicExampleAppTest extends FunSpec with BeforeAndAfterAll {
+  
+      val app = BasicExampleApp
+  
+      override def beforeAll { app.init() }
+      override def afterAll { app.shutdown() }  
+  
+      describe("GET /example") {    
+        it("should respond with 200") {
+          val request = TestRequest("/example")
+          val response = Await.result(app.application(request), 2 seconds)
+          assert(response.status === Ok)
+        }
+      }
+  
+      describe("POST /unknown-path") {
+        it("should respond with 404") {
+          val request = TestRequest("/unknown-path", "POST")
+          val response = Await.result(app.application(request), 2 seconds)
+          assert(response.status === NotFound)
+        }
+      }
+    }
+
+This is the exactly same way Smoke processes requests while your app is running.
 
 ## TODO
 

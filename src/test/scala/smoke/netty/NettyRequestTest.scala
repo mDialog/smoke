@@ -182,8 +182,8 @@ class NettyRequestTest extends FunSpec {
       val request = NettyRequest(address, rawRequest)
       
       assert(request.headers === Map(
-        "Content-Type" -> "test/html",
-        "User-Agent" -> "TestRequest/1.0.0"
+        "content-type" -> "test/html",
+        "user-agent" -> "TestRequest/1.0.0"
       ))
     }
   }

@@ -23,7 +23,7 @@ case class NettyRequest(address: SocketAddress, nettyRequest: HttpRequest)
   val hostWithPort = host + (port map (":" + _.toString) getOrElse(""))
   val ip = address.asInstanceOf[InetSocketAddress].getAddress.getHostAddress
   val keepAlive = HttpHeaders.isKeepAlive(nettyRequest)
-  val headers = nettyRequest.getHeaders map { e => (e.getKey, e.getValue) } toMap
+  val headers = nettyRequest.getHeaders map { e => (e.getKey.toLowerCase, e.getValue) } toMap
   
   val queryString = if (u.getRawQuery == null) None else Some(u.getRawQuery)
   

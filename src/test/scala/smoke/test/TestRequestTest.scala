@@ -108,13 +108,15 @@ class TestRequestTest extends FunSpec {
     }
     
     it("should return allow headers to be set during initialization") {
-      val headers = Map(
-        "Content-Type" -> "text/html; charset=UTF-8",
-        "User-Agent" -> "SmokeTest/1.0.0"
-      )
       val request = TestRequest("http://test.host",
-                                headers = headers)
-      assert(request.headers === headers)
+                                headers = Map(
+                                  "content-type" -> "text/html; charset=UTF-8",
+                                  "user-agent" -> "SmokeTest/1.0.0"
+                                ))
+      assert(request.headers === Map(
+        "content-type" -> "text/html; charset=UTF-8",
+        "user-agent" -> "SmokeTest/1.0.0"
+      ))
     }
   }
   
@@ -215,5 +217,4 @@ class TestRequestTest extends FunSpec {
       ))
     }
   }
-  
 }
