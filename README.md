@@ -263,6 +263,6 @@ Unsure of where to start? Pick a TODO, or consider one of the following contribu
 
 ## Contributors
 
-Chris Dinn
+Chris Dinn, Arron Norwell
 
 **©2012 mDialog Corp. All rights reserved.**
