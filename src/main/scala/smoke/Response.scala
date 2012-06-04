@@ -1,21 +1,39 @@
 package smoke
 
+trait ResponseData {
+  def byteLength:Int
+}
+case class UTF8Data(data: String) extends ResponseData {
+  def byteLength = data.getBytes.length
+}
+case class RawData(data: Array[Byte]) extends ResponseData {
+  def byteLength = data.length
+}
+
+object ResponseData {
+  implicit def str2UTF8Data(str: String) = UTF8Data(str)
+}
+
 case class Response(status: ResponseStatus,
                     headers: Map[String, String] = Map.empty,
-                       body: String = "") {  
-  val statusCode = status.code
-  val statusMessage = status.message
+                    body: ResponseData = "" ) {
+  def statusCode = status.code
+  def statusMessage = status.message
   
   def toMessage = messageStatus + messageHeaders + messageBody
   
-  val contentLength = body.getBytes.length
+  val contentLength = body.byteLength
   
   private def messageStatus = "HTTP/1.1 " + status.code + " " + status.message + "\r\n"
   private def messageHeaders = headers map { t => t._1 + ": " + t._2 } match {
     case Nil => ""
     case h => h.mkString("", "\r\n", "\r\n")
   }
-  private def messageBody = if(body.isEmpty) "" else "\r\n" + body
+  private def messageBody = body match {
+    case utf8: UTF8Data => if(utf8.data.isEmpty) "" else "\r\n" + utf8.data
+    //use a fixed length encoding for raw data
+    case raw: RawData => new String(raw.data, "ISO-8859-1")
+  }
 }
 
 case class ResponseStatus(code: Int, message: String)
