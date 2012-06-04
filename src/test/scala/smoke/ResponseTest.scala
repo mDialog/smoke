@@ -23,9 +23,14 @@ class ResponseTest extends FunSpec {
       assert(Response(Ok).contentLength === 0) 
     }
 
-    it("should return content length in bytes when body present") {
+    it("should return content length in bytes when string body present") {
       val response = Response(Ok, body = "test+test")
       assert(response.contentLength === 9) 
+    }
+    
+    it("should return content length in bytes when byte body present") {
+      val response = Response(Ok, body = RawData(Array(1,2,3,4,5)))
+      assert(response.contentLength === 5) 
     }
   }
   
@@ -60,6 +65,4 @@ class ResponseTest extends FunSpec {
       assert(response.toMessage === expected)
     }
   }
-
-
 }

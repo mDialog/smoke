@@ -5,8 +5,8 @@ import smoke._
 object FileApp extends Smoke {    
   onRequest {
     case GET(Path(path) & Path(FileExtension(extension)) ) => reply {
-      //serve files in the resources folder
-      val fullPath = "resources" + path
+      //serve files in the src/test/resources folder
+      val fullPath = "src/test/resources" + path
 
       try {
         import java.io.{File, FileInputStream}
@@ -15,7 +15,7 @@ object FileApp extends Smoke {
         val bytes = new Array[Byte](file.length.toInt)
         in.read(bytes)
         in.close()
-        
+
         Response(Ok, 
           body = RawData(bytes),
           headers = Map("Content-Type" -> (extension match {
