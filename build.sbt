@@ -6,6 +6,8 @@ version := "0.0.6-SNAPSHOT"
 
 scalaVersion := "2.9.1"
 
+scalacOptions ++= Seq("-unchecked", "-deprecation")
+
 libraryDependencies ++= Seq(
   "io.netty" % "netty" % "3.4.5.Final",
   "com.google.protobuf" % "protobuf-java" % "2.4.1",
