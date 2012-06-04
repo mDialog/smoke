@@ -76,8 +76,8 @@ class NettyServerHandler(log: (Request, Response) => Unit)(implicit system: Acto
       }
 
       if (request.keepAlive) {
-        nettyResponse.setHeader(CONTENT_LENGTH, nettyResponse.getContent.readableBytes);
-        nettyResponse.setHeader(CONNECTION, KEEP_ALIVE);
+        nettyResponse.setHeader(CONTENT_LENGTH, nettyResponse.getContent.readableBytes)
+        nettyResponse.setHeader(CONNECTION, KEEP_ALIVE)
       }
       
       headers foreach { pair => nettyResponse.setHeader(pair._1, pair._2) }
