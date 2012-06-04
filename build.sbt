@@ -18,11 +18,9 @@ libraryDependencies ++= Seq(
 
 resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
 
-credentials += Credentials(Path.userHome / ".mdialog.credentials")
-
 publishTo <<= version { (v: String) =>
   if (v.trim.endsWith("-SNAPSHOT")) 
-    Some("snapshots" at "http://artifactory.mdialog.com/artifactory/snapshots") 
+    Some(Resolver.file("Snapshots", file("../mdialog.github.com/snapshots/")))
   else
-    Some("releases" at "http://artifactory.mdialog.com/artifactory/releases") 
+    Some(Resolver.file("Releases", file("../mdialog.github.com/releases/")))
 }

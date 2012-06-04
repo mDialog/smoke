@@ -25,15 +25,6 @@ Run it with SBT
 
     sbt run
 
-By default, Smoke relies on [Netty](http://netty.io) to for asynchronous HTTP communication. Alternatively, you can use [Mongrel2](http://mongrel2.org):
-
-    import smoke.mongrel2.Mongrel2Server
-
-    object BasicExampleApp extends Smoke {    
-      override val server = new Mongrel2Server
-      ...
-    }
-
 Smoke provides a DSL for building HTTP services using a simple request/response pattern, where each response is provided as an Akka Future. Akka provides a powerful toolkit to control the creation and execution of Futures; spend some time with that project's [excellent documentation](http://akka.io/docs) to get a feel for how it works.
 
 By extending the Smoke trait, you get access to the tools necessary to build a robust Akka-based application. That includes to an `ActorSystem`, `Dispatcher`, default timeout and `Config` object. 
@@ -166,6 +157,17 @@ Smoke will shutdown the server and `ActorSystem` when the process receives a `TE
     afterShutdown {
       println("No longer responding to requests.")
     }
+    
+## Mongrel2
+
+By default, Smoke relies on [Netty](http://netty.io) to for asynchronous HTTP communication. Alternatively, you can use [Mongrel2](http://mongrel2.org):
+
+    import smoke.mongrel2.Mongrel2Server
+
+    object BasicExampleApp extends Smoke {    
+      override val server = new Mongrel2Server
+      ...
+    }
 
 ## Configuration
 
@@ -201,10 +203,10 @@ Make requests:
 Unit testing components of your application that interact with Smoke is made easier using the provided TestRequest class, which inherits from the Request trait.
 
     case class TestRequest(uriString: String,
-                               method: String = "GET",
-                               headers: Map[String, String] = Map.empty,
-                               body: String = "",
-                               keepAlive: Boolean = true) extends Request
+                           method: String = "GET",
+                           headers: Map[String, String] = Map.empty,
+                           body: String = "",
+                           keepAlive: Boolean = true) extends Request
 
 
 Using this class along with the tools provided by Akka allows testing of your application's responder function.
