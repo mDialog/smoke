@@ -17,7 +17,7 @@ import collection.JavaConversions._
 
 import smoke._
 
-class NettyServer(implicit config: Config, system: ActorSystem) extends Server {
+class NettyServer(implicit val config: Config, system: ActorSystem) extends Server {
   val port = config.getInt("smoke.netty.port")
 
   val handler = new NettyServerHandler(log)

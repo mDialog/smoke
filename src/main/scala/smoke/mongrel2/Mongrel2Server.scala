@@ -8,7 +8,7 @@ import akka.zeromq.{ Connect, Frame, Listener, SocketType, ZMQMessage }
 
 import smoke._
 
-class Mongrel2Server(implicit config: Config, system: ActorSystem) extends Server {
+class Mongrel2Server(implicit val config: Config, system: ActorSystem) extends Server {
   val recvAddress = config.getString("smoke.mongrel2.recvAddress")
   val sendAddress = config.getString("smoke.mongrel2.sendAddress")
   
