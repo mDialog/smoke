@@ -176,6 +176,9 @@ There are a few of configuration options. Like Akka, Smoke uses [Typesafe Config
     smoke {
       timeout = 2s
 
+      log-type = "stdout" # alternatively, set to "file" 
+      log-file = "access.log" # if log-type is "file"
+
       # By default, Smoke uses Netty
       netty {
         port = 7771

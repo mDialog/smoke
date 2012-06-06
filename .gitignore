@@ -3,3 +3,5 @@ project/target
 target
 .idea
 .idea_modules
+access.log
+config.sqlite

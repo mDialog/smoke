@@ -16,7 +16,7 @@ import akka.dispatch.Future
 trait Server {
   val config: Config
 
-  protected val accessLogger = {
+  protected lazy val accessLogger = {
     val logger = LoggerFactory.getLogger("smoke.Server")
                               .asInstanceOf[Logger]
 

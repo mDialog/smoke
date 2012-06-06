@@ -2,7 +2,7 @@ package smoke.examples
 
 import smoke._
 
-object FileApp extends Smoke {    
+object FileServerApp extends Smoke {    
   onRequest {
     case GET(Path(path) & Path(FileExtension(extension)) ) => reply {
       //serve files in the src/test/resources folder
@@ -32,7 +32,7 @@ object FileApp extends Smoke {
   
   after { response =>
     val headers = response.headers ++ Map(
-      "Server" -> "FileApp/0.0.1",
+      "Server" -> "FileServerApp/0.0.1",
       "Connection" -> "Close")
     Response(response.status, headers, response.body)
   }

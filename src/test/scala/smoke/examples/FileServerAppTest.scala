@@ -8,9 +8,9 @@ import akka.util.duration._
 import smoke._
 import smoke.test._
 
-class FileAppTest extends FunSpec with BeforeAndAfterAll {
+class FileServerAppTest extends FunSpec with BeforeAndAfterAll {
   
-  val app = FileApp
+  val app = FileServerApp
   
   override def beforeAll { app.init() }
   override def afterAll { app.shutdown() }
