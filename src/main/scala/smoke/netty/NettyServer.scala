@@ -95,6 +95,8 @@ class NettyServerHandler(log: (Request, Response) => Unit)(implicit system: Acto
       }
           
       log(request, response)
+    } onFailure {
+      case t:Throwable => throw t
     }
   }
 
