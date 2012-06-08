@@ -5,6 +5,14 @@ Smoke
 
 A thin DSL for building simple, fast, scalable, asynchronous HTTP services with Scala.
 
+## Install
+
+Using sbt
+
+    resolvers += "mDialog releases" at "http://mdialog.github.com/releases/"
+
+    libraryDependencies += "com.mdialog" %% "smoke" % "0.1.0"
+
 ## Getting started
 
 Build a simple application
@@ -67,7 +75,7 @@ If your request can be responded to quickly and immediately, you can pass a `Res
 Since a reply is just a Future[Response], you can also get one from an actor.
 
     class Responder extends Actor {
-		  def receive = {
+      def receive = {
         case GET(Path("/example")) => 
           Thread.sleep(1000)
           sender ! Response(Ok, body="It took me a second.\n")
