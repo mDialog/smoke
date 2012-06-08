@@ -37,10 +37,13 @@ Smoke provides a DSL for building HTTP services using a simple request/response 
 
 By extending the Smoke trait, you get access to the tools necessary to build a robust Akka-based application. That includes to an `ActorSystem`, `Dispatcher`, default timeout and `Config` object. 
 
-    implicit val config = ConfigFactory.load()
-    implicit val system = ActorSystem("Smoke", config)
-    implicit val dispatcher = system.dispatcher
-    implicit val timeout = Timeout(timeoutDuration milliseconds)
+    trait Smoke {
+      implicit val config = ConfigFactory.load()
+      implicit val system = ActorSystem("Smoke", config)
+      implicit val dispatcher = system.dispatcher
+      implicit val timeout = Timeout(timeoutDuration milliseconds)
+      ...
+    }
 
 Be sure to check out the  [examples](https://github.com/mDialog/smoke/tree/master/src/main/scala/smoke/examples).
 
