@@ -5,9 +5,9 @@ Smoke
 
 A thin DSL for building simple, fast, scalable, asynchronous HTTP services with Scala.
 
-## Install
+## Using
 
-Using sbt
+In your build.sbt
 
     resolvers += "mDialog releases" at "http://mdialog.github.com/releases/"
 
@@ -29,7 +29,7 @@ Build a simple application
       }
     }
 
-Run it with SBT
+Run it with sbt
 
     sbt run
 
@@ -222,7 +222,7 @@ Unit testing components of your application that interact with Smoke is made eas
 
 Using this class along with the tools provided by Akka allows testing of your application's responder function.
 
-You can test your app itself by simply initializing and shutting down your app inside a test suite, and invoking the application method directly. 
+You can test an app by initializing and shutting it down inside a test suite. Invoke the application method directly, passing it a TestRequest. 
 
     import org.scalatest.{ FunSpec, BeforeAndAfterAll }
 
@@ -256,7 +256,7 @@ You can test your app itself by simply initializing and shutting down your app i
       }
     }
 
-This is the exactly same way Smoke processes requests while your app is running.
+This is the same way Smoke processes requests while your app is running.
 
 ## TODO
 
