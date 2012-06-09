@@ -131,7 +131,7 @@ Responses are built using three parameters: a status code object, a `Map` of hea
 You can use the `before` and `after` filters to alter either the request prior to sending it to the responder or the response after it's been returned.
 
     after { resp =>
-      val headers = resp.headers -> ("Server" -> "ExampleApp/0.0.1")
+      val headers = resp.headers + ("Server" -> "ExampleApp/0.0.1")
       Response(resp.status, headers, resp.body)
     }
 
