@@ -20,8 +20,8 @@ trait Server {
     val logger = LoggerFactory.getLogger("smoke.Server")
                               .asInstanceOf[Logger]
 
+    logger.setAdditive(false)
     val context = logger.getLoggerContext
-    context.reset()
 
     config.getString("smoke.log-type") match {
       case "file" => 
