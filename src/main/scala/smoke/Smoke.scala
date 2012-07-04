@@ -14,61 +14,61 @@ trait Smoke extends DelayedInit {
   implicit val config = ConfigFactory.load()
   implicit val system = ActorSystem("Smoke", config)
   implicit val dispatcher = system.dispatcher
-  
+
   val timeoutDuration: Long = config.getMilliseconds("smoke.timeout")
   implicit val timeout = Timeout(timeoutDuration milliseconds)
-  
-  private var beforeFilter = { request: Request => request }
-  private var responder = { request: Request => 
+
+  private var beforeFilter = { request: Request ⇒ request }
+  private var responder = { request: Request ⇒
     Promise.successful(Response(ServiceUnavailable)).future
   }
-  private var afterFilter = { response: Response => response }
-  private var errorHandler: PartialFunction[Throwable, Response] = { 
-    case t: Throwable => Response(InternalServerError, body = t.getMessage + "\n" + 
+  private var afterFilter = { response: Response ⇒ response }
+  private var errorHandler: PartialFunction[Throwable, Response] = {
+    case t: Throwable ⇒ Response(InternalServerError, body = t.getMessage + "\n" +
       t.getStackTrace.mkString("\n"))
   }
-    
-  private var shutdownHooks = List(() => {
+
+  private var shutdownHooks = List(() ⇒ {
     server.stop()
     system.shutdown()
   })
-  
-  def application = 
-    beforeFilter andThen responder andThen { f => 
-      f recover(errorHandler) map afterFilter 
+
+  def application =
+    beforeFilter andThen responder andThen { f ⇒
+      f recover (errorHandler) map afterFilter
     }
-      
+
   val server: Server = new NettyServer
-  
-  def before(filter: (Request) => Request) { beforeFilter = filter }
 
-  def after(filter: (Response) => Response) { afterFilter = filter }
+  def before(filter: (Request) ⇒ Request) { beforeFilter = filter }
 
-  def onRequest(handler: (Request) => Future[Response]) { responder = handler }
+  def after(filter: (Response) ⇒ Response) { afterFilter = filter }
 
-  def onError(handler: PartialFunction[Throwable, Response]) { 
+  def onRequest(handler: (Request) ⇒ Future[Response]) { responder = handler }
+
+  def onError(handler: PartialFunction[Throwable, Response]) {
     errorHandler = handler orElse errorHandler
   }
-  
-  def beforeShutdown(hook: => Unit) { shutdownHooks = hook _ :: shutdownHooks }
 
-  def afterShutdown(hook: => Unit) { shutdownHooks = shutdownHooks ::: List(hook _) }
+  def beforeShutdown(hook: ⇒ Unit) { shutdownHooks = hook _ :: shutdownHooks }
 
-  def reply(action: => Response) = Future(action)
+  def afterShutdown(hook: ⇒ Unit) { shutdownHooks = shutdownHooks ::: List(hook _) }
+
+  def reply(action: ⇒ Response) = Future(action)
 
   def reply(r: Response) = Promise.successful(r)
-  
+
   def fail(e: Exception) = Promise.failed(e)
 
   val executionStart: Long = currentTime
   var running = false
-  
+
   protected def args: Array[String] = _args
   private var _args: Array[String] = _
 
-  private var initCode: () => Unit = _
-  override def delayedInit(body: => Unit) { initCode = (() => body) }
-  
+  private var initCode: () ⇒ Unit = _
+  override def delayedInit(body: ⇒ Unit) { initCode = (() ⇒ body) }
+
   def init(args: Array[String] = Seq.empty.toArray) {
     if (!running) {
       _args = args
@@ -76,20 +76,20 @@ trait Smoke extends DelayedInit {
       running = true
     }
   }
-  
-  def shutdown() { 
+
+  def shutdown() {
     if (running) {
       running = false
-      shutdownHooks foreach { hook => hook() } 
+      shutdownHooks foreach { hook ⇒ hook() }
     }
   }
-  
+
   def main(args: Array[String]) = {
     init(args)
-    
+
     server.setApplication(application)
     server.start()
-    
+
     Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {
       def run = shutdown()
     }))

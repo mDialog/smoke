@@ -18,13 +18,13 @@ trait Server {
 
   protected lazy val accessLogger = {
     val logger = LoggerFactory.getLogger("smoke.Server")
-                              .asInstanceOf[Logger]
+      .asInstanceOf[Logger]
 
     logger.setAdditive(false)
     val context = logger.getLoggerContext
 
     config.getString("smoke.log-type") match {
-      case "file" => 
+      case "file" ⇒
         val fileEncoder = new PatternLayoutEncoder()
         fileEncoder.setContext(context)
         fileEncoder.setPattern("%message%n")
@@ -33,13 +33,13 @@ trait Server {
         val logFile = config.getString("smoke.log-file")
         val fileAppender = new FileAppender[ILoggingEvent]();
         fileAppender.setContext(context);
-        fileAppender.setEncoder(fileEncoder); 
+        fileAppender.setEncoder(fileEncoder);
         fileAppender.setFile(logFile)
         fileAppender.start();
 
         logger.addAppender(fileAppender)
 
-      case "stdout" => 
+      case "stdout" ⇒
         val consoleEncoder = new PatternLayoutEncoder()
         consoleEncoder.setContext(context)
         consoleEncoder.setPattern("%message%n")
@@ -47,12 +47,12 @@ trait Server {
 
         val consoleAppender = new ConsoleAppender[ILoggingEvent]();
         consoleAppender.setContext(context);
-        consoleAppender.setEncoder(consoleEncoder); 
+        consoleAppender.setEncoder(consoleEncoder);
         consoleAppender.start();
 
         logger.addAppender(consoleAppender)
 
-      case _ =>  
+      case _ ⇒
     }
 
     logger
@@ -60,18 +60,18 @@ trait Server {
 
   val logDateFormat = new SimpleDateFormat("dd/MMM/yyyy:HH:mm:ss Z")
 
-  val log = { (request: Request, response: Response) =>
-    val entry = request.ip + " - - " + 
-                "[" + logDateFormat.format(new Date()) + "] " +
-                "\"" + request.method + " " + request.path + " " + request.version + "\" " +
-                response.statusCode + " " + response.contentLength
-   
+  val log = { (request: Request, response: Response) ⇒
+    val entry = request.ip + " - - " +
+      "[" + logDateFormat.format(new Date()) + "] " +
+      "\"" + request.method + " " + request.path + " " + request.version + "\" " +
+      response.statusCode + " " + response.contentLength
+
     accessLogger.info(entry)
   }
-  
-  def setApplication(application: (Request) => Future[Response]): Unit
-  
+
+  def setApplication(application: (Request) ⇒ Future[Response]): Unit
+
   def start(): Unit
-  
+
   def stop(): Unit
 }
