@@ -25,15 +25,15 @@ class Mongrel2RequestTest extends FunSpec {
   //   "PATTERN":"/search/"
   // },22:greeting=hello+goodbye,
   val message = Source.fromURL(getClass.getResource("/mongrel2_request.txt"))
-                      .getLines
-                      .mkString
-                      .getBytes
-                    
+    .getLines
+    .mkString
+    .getBytes
+
   it("should parse from Mongrel message") {
     val request = Mongrel2Request(message)
     assert(request.sender === "54c6755b-9628-40a4-9a2d-cc82a816345e")
     assert(request.connection === "57")
-        
+
     assert(request.method === "POST")
     assert(request.uri === new URI("/A134/B987?someVal=45.432&other+val=47.334"))
     assert(request.path === "/A134/B987")
@@ -42,7 +42,7 @@ class Mongrel2RequestTest extends FunSpec {
     assert(request.port === Some(6767))
     assert(request.ip === "127.0.0.1")
     assert(request.queryString === Some("someVal=45.432&other+val=47.334"))
-    
+
     assert(request.contentType === Some("application/x-www-form-urlencoded"))
     assert(request.userAgent === Some("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_7) AppleWebKit/534.24 (KHTML, like Gecko) Chrome/11.0.696.57 Safari/534.24"))
 
@@ -53,5 +53,5 @@ class Mongrel2RequestTest extends FunSpec {
     assert(request.params.get("other val") === Some("47.334"))
     assert(request.params.get("greeting") === Some("hello goodbye"))
   }
-  
+
 }

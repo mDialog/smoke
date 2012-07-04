@@ -6,7 +6,7 @@ import smoke.Request
 
 case class Mongrel2Request(rawData: Array[Byte]) extends Request {
   private val message = new String(rawData, "UTF-8")
-  
+
   val (sender, connection, path, headers, body) = parse(message)
   val version = "HTTP/1.1"
   val method = headers("METHOD")
@@ -20,25 +20,25 @@ case class Mongrel2Request(rawData: Array[Byte]) extends Request {
 
   val contentType = headers.get("content-type")
   val userAgent = headers.get("user-agent")
-  
+
   val queryParams = parseParams(queryString.getOrElse(""))
   val formParams = contentType filter (_ == "application/x-www-form-urlencoded") match {
-    case Some(t) => parseParams(body)
-    case None => Map.empty[String, String]
+    case Some(t) ⇒ parseParams(body)
+    case None    ⇒ Map.empty[String, String]
   }
   val params = queryParams ++ formParams
-  
+
   val contentLength = body.getBytes.length
-  
+
   private def parse(message: String) = {
-    val Array(sender, connection, path, rest) = message.split(" ", 4)   
+    val Array(sender, connection, path, rest) = message.split(" ", 4)
     val (rawHeaders, bodyNetstring) = parseNetstring(rest)
     val headers = JSON.parseFull(rawHeaders).getOrElse(Map.empty).asInstanceOf[Map[String, String]]
     val (body, _) = parseNetstring(bodyNetstring)
-    
+
     (sender, connection, path, headers, body)
   }
-  
+
   private def parseNetstring(netstring: String) = {
     val Array(length, rest) = netstring.split(":", 2)
     (rest.substring(0, length.toInt), rest.substring(length.toInt + 1))
