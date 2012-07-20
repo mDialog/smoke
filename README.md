@@ -11,7 +11,7 @@ In your build.sbt
 
     resolvers += "mDialog releases" at "http://mdialog.github.com/releases/"
 
-    libraryDependencies += "com.mdialog" %% "smoke" % "0.1.1"
+    libraryDependencies += "com.mdialog" %% "smoke" % "0.2.1"
 
 ## Getting started
 
