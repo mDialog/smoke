@@ -11,7 +11,7 @@ import akka.util.duration._
 import smoke.netty.NettyServer
 
 trait Smoke extends DelayedInit {
-  implicit val config = ConfigFactory.load()
+  implicit lazy val config = ConfigFactory.load()
   implicit val system = ActorSystem("Smoke", config)
   implicit val dispatcher = system.dispatcher
 
