@@ -3,7 +3,7 @@ package smoke
 import scala.compat.Platform.currentTime
 import com.typesafe.config.ConfigFactory
 
-import akka.dispatch.{ Future, Promise }
+import akka.dispatch.{ Future, Promise, ExecutionContext }
 import akka.actor.ActorSystem
 import akka.util.Timeout
 import akka.util.duration._
@@ -11,12 +11,22 @@ import akka.util.duration._
 import smoke.netty.NettyServer
 
 trait Smoke extends DelayedInit {
-  implicit lazy val config = ConfigFactory.load()
-  implicit val system = ActorSystem("Smoke", config)
-  implicit val dispatcher = system.dispatcher
+  implicit val config = ConfigFactory.load()
 
-  val timeoutDuration: Long = config.getMilliseconds("smoke.timeout")
-  implicit val timeout = Timeout(timeoutDuration milliseconds)
+  implicit var system: ActorSystem = _
+  implicit var dispatcher: ExecutionContext = _
+  implicit var timeout: Timeout = _
+  var server: Server = _
+
+  def init() {
+    system = ActorSystem("Smoke", config)
+    dispatcher = system.dispatcher
+
+    val timeoutDuration: Long = config.getMilliseconds("smoke.timeout")
+    timeout = Timeout(timeoutDuration milliseconds)
+
+    server = new NettyServer
+  }
 
   private var beforeFilter = { request: Request ⇒ request }
   private var responder = { request: Request ⇒
@@ -37,8 +47,6 @@ trait Smoke extends DelayedInit {
     beforeFilter andThen responder andThen { f ⇒
       f recover (errorHandler) map afterFilter
     }
-
-  val server: Server = new NettyServer
 
   def before(filter: (Request) ⇒ Request) { beforeFilter = filter }
 
