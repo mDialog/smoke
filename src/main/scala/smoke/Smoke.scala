@@ -11,22 +11,14 @@ import akka.util.duration._
 import smoke.netty.NettyServer
 
 trait Smoke extends DelayedInit {
-  implicit val config = ConfigFactory.load()
+  implicit var config = ConfigFactory.load()
 
   implicit var system: ActorSystem = _
   implicit var dispatcher: ExecutionContext = _
   implicit var timeout: Timeout = _
   var server: Server = _
 
-  def init() {
-    system = ActorSystem("Smoke", config)
-    dispatcher = system.dispatcher
-
-    val timeoutDuration: Long = config.getMilliseconds("smoke.timeout")
-    timeout = Timeout(timeoutDuration milliseconds)
-
-    server = new NettyServer
-  }
+  def beforeStartup() {}
 
   private var beforeFilter = { request: Request ⇒ request }
   private var responder = { request: Request ⇒
@@ -80,7 +72,19 @@ trait Smoke extends DelayedInit {
   def init(args: Array[String] = Seq.empty.toArray) {
     if (!running) {
       _args = args
+
+      beforeStartup()
+
+      system = ActorSystem("Smoke", config)
+      dispatcher = system.dispatcher
+
+      val timeoutDuration: Long = config.getMilliseconds("smoke.timeout")
+      timeout = Timeout(timeoutDuration milliseconds)
+
+      server = new NettyServer
+
       initCode()
+
       running = true
     }
   }
@@ -93,6 +97,7 @@ trait Smoke extends DelayedInit {
   }
 
   def main(args: Array[String]) = {
+
     init(args)
 
     server.setApplication(application)
