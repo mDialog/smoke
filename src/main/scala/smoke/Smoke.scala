@@ -22,7 +22,9 @@ trait Smoke extends DelayedInit {
   private val timeoutDuration: Long = config.getMilliseconds("smoke.timeout")
   final implicit val timeout = Timeout(timeoutDuration milliseconds)
 
-  final val server = new NettyServer
+  def setServer() = { new NettyServer }
+
+  private val server = setServer()
 
   private var beforeFilter = { request: Request ⇒ request }
   private var responder = { request: Request ⇒

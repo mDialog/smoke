@@ -19,7 +19,7 @@ Build a simple application
 
     import smoke._
 
-    object BasicExampleApp extends Smoke {    
+    object BasicExampleApp extends Smoke {
       onRequest {
         case GET(Path("/example")) => reply {
           Thread.sleep(1000)
@@ -35,15 +35,16 @@ Run it with sbt
 
 Smoke provides a DSL for building HTTP services using a simple request/response pattern, where each response is provided as an Akka Future. Akka provides a powerful toolkit to control the creation and execution of Futures; spend some time with that project's [excellent documentation](http://akka.io/docs) to get a feel for how it works.
 
-By extending the Smoke trait, you get access to the tools necessary to build a robust Akka-based application. That includes to an `ActorSystem`, `Dispatcher`, default timeout and `Config` object. 
+With the Smoke trait, you get access to the tools necessary to build a robust Akka-based application. That includes to an `ActorSystem`, `Dispatcher`, default timeout and `Config` object. 
 
     trait Smoke {
-      implicit val config = ConfigFactory.load()
-      implicit val system = ActorSystem("Smoke", config)
-      implicit val dispatcher = system.dispatcher
-      implicit val timeout = Timeout(timeoutDuration milliseconds)
+      final implicit val config = configure()
+      final implicit val system = ActorSystem("Smoke", config)
+      final implicit val dispatcher = system.dispatcher
+      final implicit val timeout = Timeout(timeoutDuration milliseconds)
       ...
     }
+
 
 Be sure to check out the  [examples](https://github.com/mDialog/smoke/tree/master/src/main/scala/smoke/examples).
 
@@ -79,7 +80,7 @@ Since a reply is just a Future[Response], you can also get one from an actor.
 
     class Responder extends Actor {
       def receive = {
-        case GET(Path("/example")) => 
+        case GET(Path("/example")) =>
           Thread.sleep(1000)
           sender ! Response(Ok, body="It took me a second.\n")
         case _ => sender ! Response(NotFound)
@@ -91,7 +92,7 @@ Since a reply is just a Future[Response], you can also get one from an actor.
 
       onRequest (actor ? _ mapTo manifest[Response])
     }
-    
+
 Even better, you can use the tools provided by Akka to compose your responder function using many Futures:
 
     class DataSource extends Actor {
@@ -117,9 +118,9 @@ Even better, you can use the tools provided by Akka to compose your responder fu
         } yield Response(Ok, body = response)
       }
     }
-		
+
 To get a feel for the power of Akka's composable futures, [read the documentation](http://doc.akka.io/docs/akka/snapshot/scala/futures.html).		
-		
+
 ### Responses
 
 Responses are built using three parameters: a status code object, a `Map` of headers and a request body.
@@ -146,13 +147,13 @@ If your `Future[Response]` contains an exception, you can catch it and return an
 	onError {
 	  case NotFoundException => Response(NotFound)
 	}
-	
+
 This is especially useful when using a responder function composed from several Futures.
 
 ## Basically,
 
-    def application = before andThen onRequest andThen { f => 
-      f recover(onError) map after 
+    def application = before andThen onRequest andThen { f =>
+      f recover(onError) map after
     }
 
 *(paraphrased)*
@@ -168,15 +169,15 @@ Smoke will shutdown the server and `ActorSystem` when the process receives a `TE
     afterShutdown {
       println("No longer responding to requests.")
     }
-    
+
 ## Mongrel2
 
 By default, Smoke relies on [Netty](http://netty.io) to for asynchronous HTTP communication. Alternatively, you can use [Mongrel2](http://mongrel2.org):
 
     import smoke.mongrel2.Mongrel2Server
 
-    object BasicExampleApp extends Smoke {    
-      override val server = new Mongrel2Server
+    object BasicExampleApp extends Smoke {
+      override def setServer() = { new Mongrel2Server }
       ...
     }
 
@@ -201,7 +202,16 @@ There are a few of configuration options. Like Akka, Smoke uses [Typesafe Config
         sendAddress = "ipc:///tmp/SmokeMongrel2Response"
       } 
     }
-    
+
+For more control over how the the config object is constructed, you
+may override the Smoke configure() method. For example, to include
+extra config from a properties file, you would do the following:
+
+    override def configure() = {
+      ConfigFactory.load("configuration.properties")
+        .withFallback(ConfigFactory.load())
+    }
+
 ## Try it out
 
 Clone the repository, run one of the sample apps:
