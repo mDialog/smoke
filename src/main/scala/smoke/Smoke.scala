@@ -60,9 +60,9 @@ trait Smoke extends DelayedInit {
 
   def afterShutdown(hook: ⇒ Unit) { shutdownHooks = shutdownHooks ::: List(hook _) }
 
-  def reply(action: ⇒ Response) = Future(action)
+  //def reply(r: Response) = Promise.successful(r)
 
-  def reply(r: Response) = Promise.successful(r)
+  def reply(action: ⇒ Response) = Future(action)
 
   def fail(e: Exception) = Promise.failed(e)
 

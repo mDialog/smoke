@@ -5,6 +5,8 @@ trait ResponseData {
 }
 case class UTF8Data(data: String) extends ResponseData {
   def byteLength = data.getBytes.length
+
+  override def toString = data
 }
 case class RawData(data: Array[Byte]) extends ResponseData {
   def byteLength = data.length
