@@ -8,4 +8,4 @@ config.sqlite
 .cache
 .classpath
 .project
-.settings/org.scala-ide.sdt.core.prefs
+.settings
