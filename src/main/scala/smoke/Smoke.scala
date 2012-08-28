@@ -50,7 +50,18 @@ trait Smoke extends DelayedInit {
 
   def after(filter: (Response) ⇒ Response) { afterFilter = filter }
 
-  def onRequest(handler: (Request) ⇒ Future[Response]) { responder = handler }
+  def onRequest(handler: (Request) ⇒ Future[Response]) {
+    def withErrorHandling(request: Request): Future[Response] = {
+      try {
+        handler(request)
+      } catch {
+        case e: Exception ⇒
+          Promise.failed(e)
+      }
+    }
+
+    responder = withErrorHandling _
+  }
 
   def onError(handler: PartialFunction[Throwable, Response]) {
     errorHandler = handler orElse errorHandler
