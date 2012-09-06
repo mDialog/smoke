@@ -17,8 +17,8 @@ object ResponseData {
 }
 
 case class Response(status: ResponseStatus,
-    headers: Map[String, String] = Map.empty,
-    body: ResponseData = "") {
+  headers: Map[String, String] = Map.empty,
+  body: ResponseData = "") {
   def statusCode = status.code
   def statusMessage = status.message
 
@@ -29,12 +29,12 @@ case class Response(status: ResponseStatus,
   private def messageStatus = "HTTP/1.1 " + status.code + " " + status.message + "\r\n"
   private def messageHeaders = headers map { t ⇒ t._1 + ": " + t._2 } match {
     case Nil ⇒ ""
-    case h   ⇒ h.mkString("", "\r\n", "\r\n")
+    case h ⇒ h.mkString("", "\r\n", "\r\n")
   }
   private def messageBody = body match {
     case utf8: UTF8Data ⇒ if (utf8.data.isEmpty) "" else "\r\n" + utf8.data
     //use a fixed length encoding for raw data
-    case raw: RawData   ⇒ new String(raw.data, "ISO-8859-1")
+    case raw: RawData ⇒ new String(raw.data, "ISO-8859-1")
   }
 }
 
@@ -72,6 +72,16 @@ object ProxyAuthenticationRequired extends ResponseStatus(407, "Proxy Authentica
 object RequestTimeout extends ResponseStatus(408, "Request Timeout")
 object Conflict extends ResponseStatus(409, "Conflict")
 object Gone extends ResponseStatus(410, "Gone")
+object LenghtRequired extends ResponseStatus(411, "Length Required")
+object PreconditionFailed extends ResponseStatus(412, "Precondition Failed")
+object RequestEntityTooLarge extends ResponseStatus(413, "Request Entity Too Large")
+object RequestUriTooLong extends ResponseStatus(414, "Request-URI Too Long")
+object UnsupportedMediaType extends ResponseStatus(415, "Unsupported Media Type")
+object RequestRangeNotSatisfiable extends ResponseStatus(416, "Requested Range Not Satisfiable")
+object ExpectationFailed extends ResponseStatus(417, "Expectation Failed")
+object UnprocessableEntity extends ResponseStatus(422, "Unprocessable Entity")
+object Locked extends ResponseStatus(423, "Locked")
+object FailedDependency extends ResponseStatus(424, "Failed Dependency")
 
 object InternalServerError extends ResponseStatus(500, "Internal Server Error")
 object NotImplemented extends ResponseStatus(501, "Not Implemented")
