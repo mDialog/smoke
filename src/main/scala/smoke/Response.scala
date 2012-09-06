@@ -17,8 +17,8 @@ object ResponseData {
 }
 
 case class Response(status: ResponseStatus,
-  headers: Map[String, String] = Map.empty,
-  body: ResponseData = "") {
+    headers: Map[String, String] = Map.empty,
+    body: ResponseData = "") {
   def statusCode = status.code
   def statusMessage = status.message
 
@@ -29,12 +29,12 @@ case class Response(status: ResponseStatus,
   private def messageStatus = "HTTP/1.1 " + status.code + " " + status.message + "\r\n"
   private def messageHeaders = headers map { t ⇒ t._1 + ": " + t._2 } match {
     case Nil ⇒ ""
-    case h ⇒ h.mkString("", "\r\n", "\r\n")
+    case h   ⇒ h.mkString("", "\r\n", "\r\n")
   }
   private def messageBody = body match {
     case utf8: UTF8Data ⇒ if (utf8.data.isEmpty) "" else "\r\n" + utf8.data
     //use a fixed length encoding for raw data
-    case raw: RawData ⇒ new String(raw.data, "ISO-8859-1")
+    case raw: RawData   ⇒ new String(raw.data, "ISO-8859-1")
   }
 }
 
