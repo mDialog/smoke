@@ -3,5 +3,9 @@ project/target
 target
 .idea
 .idea_modules
-access.log
 config.sqlite
+*.log
+.cache
+.classpath
+.project
+.settings/org.scala-ide.sdt.core.prefs
