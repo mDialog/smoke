@@ -15,6 +15,21 @@ class ErrorHandlerExampleAppTest extends FunSpec with BeforeAndAfterAll {
   override def beforeAll { app.init() }
   override def afterAll { app.shutdown() }
 
+  describe("GET /before-exception") {
+    it("should raise a handled exception") {
+      val request = TestRequest("/before-exception")
+      val response = Await.result(app.application(request), 2 seconds)
+      assert(response.body.toString === "Before filter exception")
+    }
+  }
+  describe("GET /after-exception") {
+    it("should raise a handled exception") {
+      val request = TestRequest("/after-exception")
+      val response = Await.result(app.application(request), 2 seconds)
+      assert(response.body.toString === "After filter exception")
+    }
+  }
+
   describe("GET /future-result-error") {
     it("should respond with 200") {
       val request = TestRequest("/future-result-error")

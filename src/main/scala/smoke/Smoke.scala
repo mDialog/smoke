@@ -41,27 +41,28 @@ trait Smoke extends DelayedInit {
     system.shutdown()
   })
 
-  def application =
-    beforeFilter andThen responder andThen { f ⇒
-      f recover (errorHandler) map afterFilter
-    }
-
-  def before(filter: (Request) ⇒ Request) { beforeFilter = filter }
-
-  def after(filter: (Response) ⇒ Response) { afterFilter = filter }
-
-  def onRequest(handler: (Request) ⇒ Future[Response]) {
-    def withErrorHandling(request: Request): Future[Response] = {
+  private def withErrorHandling[T](errorProne: T ⇒ Future[Response]) = {
+    def maybeFails(x: T): Future[Response] = {
       try {
-        handler(request)
+        errorProne(x)
       } catch {
         case e: Exception ⇒
           Promise.failed(e)
       }
     }
 
-    responder = withErrorHandling _
+    maybeFails _ andThen { _ recover errorHandler }
   }
+
+  def application = withErrorHandling {
+    beforeFilter andThen responder andThen { _ map afterFilter }
+  }
+
+  def before(filter: (Request) ⇒ Request) { beforeFilter = filter }
+
+  def after(filter: (Response) ⇒ Response) { afterFilter = filter }
+
+  def onRequest(handler: (Request) ⇒ Future[Response]) { responder = handler }
 
   def onError(handler: PartialFunction[Throwable, Response]) {
     errorHandler = handler orElse errorHandler

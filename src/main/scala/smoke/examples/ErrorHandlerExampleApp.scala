@@ -4,8 +4,15 @@ import smoke._
 
 class RequestHandlerException extends Exception
 class FutureResultException extends Exception
+class BeforeException extends Exception
+class AfterException extends Exception
 
 object ErrorHandlerExampleApp extends Smoke {
+  before {
+    case GET(Path("/before-exception")) ⇒
+      throw new BeforeException
+    case request ⇒ request
+  }
 
   onRequest {
     case GET(Path("/future-result-error")) ⇒ reply {
@@ -17,6 +24,9 @@ object ErrorHandlerExampleApp extends Smoke {
       throw new RequestHandlerException
       reply(Response(Ok, body = "Hello world"))
 
+    case GET(Path("/after-exception")) ⇒
+      reply(Response(Ok, body = "raise havoc"))
+
     case _ ⇒ reply(Response(NotFound))
   }
 
@@ -25,14 +35,22 @@ object ErrorHandlerExampleApp extends Smoke {
       Response(InternalServerError, body = "Future result exception")
     case e: RequestHandlerException ⇒
       Response(InternalServerError, body = "Request handler exception")
+    case e: BeforeException ⇒
+      Response(InternalServerError, body = "Before filter exception")
+    case e: AfterException ⇒
+      Response(InternalServerError, body = "After filter exception")
   }
 
-  after { response ⇒
-    val headers = response.headers ++ Map(
-      "Server" -> "ErrorHandlerExampleApp/0.0.1",
-      "Connection" -> "Close")
-    Response(response.status, headers, response.body)
-  }
+  after {
+    case Response(_, _, UTF8Data("raise havoc")) ⇒
+      throw new AfterException
 
+    case Response(status, headers, body) ⇒
+      val _headers = headers ++ Map(
+        "Server" -> "ErrorHandlerExampleApp/0.0.1",
+        "Connection" -> "Close")
+
+      Response(status, _headers, body)
+  }
 }
 
