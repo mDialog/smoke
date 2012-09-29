@@ -11,7 +11,7 @@ In your build.sbt
 
     resolvers += "mDialog releases" at "http://mdialog.github.com/releases/"
 
-    libraryDependencies += "com.mdialog" %% "smoke" % "0.2.1"
+    libraryDependencies += "com.mdialog" %% "smoke" % "0.3.0"
 
 ## Getting started
 
@@ -170,17 +170,6 @@ Smoke will shutdown the server and `ActorSystem` when the process receives a `TE
       println("No longer responding to requests.")
     }
 
-## Mongrel2
-
-By default, Smoke relies on [Netty](http://netty.io) to for asynchronous HTTP communication. Alternatively, you can use [Mongrel2](http://mongrel2.org):
-
-    import smoke.mongrel2.Mongrel2Server
-
-    object BasicExampleApp extends Smoke {
-      override def setServer() = { new Mongrel2Server }
-      ...
-    }
-
 ## Configuration
 
 There are a few of configuration options. Like Akka, Smoke uses [Typesafe Config Library](https://github.com/typesafehub/config). You can override any of the default configuration options by adding an `application.conf` file to your project.
@@ -191,16 +180,10 @@ There are a few of configuration options. Like Akka, Smoke uses [Typesafe Config
       log-type = "stdout" # alternatively, set to "file" 
       log-file = "access.log" # if log-type is "file"
 
-      # By default, Smoke uses Netty
+      # Smoke uses Netty, but can be extended to use any server backend
       netty {
         port = 7771
       }
-
-      # For Mongrel2 users
-      mongrel2 {
-        recvAddress = "ipc:///tmp/SmokeMongrel2Request"
-        sendAddress = "ipc:///tmp/SmokeMongrel2Response"
-      } 
     }
 
 For more control over how the the config object is constructed, you
@@ -275,6 +258,10 @@ This is the same way Smoke processes requests while your app is running.
 
   - SSL support (in the meantime, we use [stunnel](http://www.stunnel.org/))
 
+## Documentation
+
+Read the API documentation here: [http://mdialog.github.com/api/smoke-0.3.0/](http://mdialog.github.com/api/smoke-0.3.0/)
+
 ## License
 
 This project is released under the Apache License v2, for more details see the 'LICENSE' file.
@@ -287,6 +274,6 @@ Unsure of where to start? Pick a TODO, or consider one of the following contribu
 
 ## Contributors
 
-Chris Dinn, Arron Norwell
+Chris Dinn, Sebastian Hubbard, Matt MacAulay, Arron Norwell
 
 **©2012 mDialog Corp. All rights reserved.**
