@@ -75,9 +75,28 @@ class NettyRequestTest extends FunSpec {
   }
 
   describe("port") {
-    it("should return Some(port) when port present") {
+    it("should return Some(port) when port present in uri") {
       val uri = "http://test.host:6768/A134/B987"
       val rawRequest = new DefaultHttpRequest(HTTP_1_1, GET, uri)
+      val request = NettyRequest(address, rawRequest)
+
+      assert(request.port === Some(6768))
+    }
+
+    it("should return Some(port) when port present in header") {
+      val uri = "/A134/B987"
+      val rawRequest = new DefaultHttpRequest(HTTP_1_1, GET, uri)
+      rawRequest.addHeader("host", "test.host:6768")
+      val request = NettyRequest(address, rawRequest)
+
+      assert(request.port === Some(6768))
+    }
+
+    it("should return Some(port) from uri when port present in uri and header") {
+      val uri = "http://test.host:6768/A134/B987"
+      val header = "test.host:6769"
+      val rawRequest = new DefaultHttpRequest(HTTP_1_1, GET, uri)
+      rawRequest.addHeader("host", header)
       val request = NettyRequest(address, rawRequest)
 
       assert(request.port === Some(6768))
@@ -111,20 +130,46 @@ class NettyRequestTest extends FunSpec {
   }
 
   describe("host") {
-    it("should return host without port when port present") {
-      val uri = "http://test.host:6768/A134/B987"
-      val rawRequest = new DefaultHttpRequest(HTTP_1_1, GET, uri)
-      val request = NettyRequest(address, rawRequest)
-
-      assert(request.hostWithPort === "test.host:6768")
-    }
-
-    it("should return host without port when port not present") {
+    it("should return host when present in URI") {
       val uri = "http://test.host/A134/B987"
       val rawRequest = new DefaultHttpRequest(HTTP_1_1, GET, uri)
       val request = NettyRequest(address, rawRequest)
 
-      assert(request.hostWithPort === "test.host")
+      assert(request.host === "test.host")
+    }
+
+    it("should return host without port if present in URI") {
+      val uri = "http://test.host:9090/A134/B987"
+      val rawRequest = new DefaultHttpRequest(HTTP_1_1, GET, uri)
+      val request = NettyRequest(address, rawRequest)
+
+      assert(request.host === "test.host")
+    }
+
+    it("should return host if present in header") {
+      val uri = "/A134/B987"
+      val rawRequest = new DefaultHttpRequest(HTTP_1_1, GET, uri)
+      rawRequest.addHeader("host", "test.host")
+      val request = NettyRequest(address, rawRequest)
+
+      assert(request.host === "test.host")
+    }
+
+    it("should return host without port when present in header") {
+      val uri = "/A134/B987"
+      val rawRequest = new DefaultHttpRequest(HTTP_1_1, GET, uri)
+      rawRequest.addHeader("host", "test.host:9090")
+      val request = NettyRequest(address, rawRequest)
+
+      assert(request.host === "test.host")
+    }
+
+    it("should return null if host not in URI or header") {
+      val uri = "/A134/B987"
+      val rawRequest = new DefaultHttpRequest(HTTP_1_1, GET, uri)
+      val request = NettyRequest(address, rawRequest)
+
+      assert(request.host === null)
     }
   }
 
@@ -420,6 +465,106 @@ class NettyRequestTest extends FunSpec {
       val request = NettyRequest(address, rawRequest)
 
       assert(request.keepAlive)
+    }
+  }
+
+  describe("extractHost") {
+
+    it ("should return the host stored in the headers") {
+      val host = "test.host.com"
+      val uri = "/path/to/file"
+      val rawRequest = new DefaultHttpRequest(HTTP_1_1, GET, uri)
+      rawRequest.addHeader("host", host)
+
+      assert(NettyRequest.extractHost(rawRequest) === host)
+    }
+
+    it ("should exclude the port and return the host stored in the headers") {
+      val host = "test.host.com"
+      val uri = "/path/to/file"
+      val rawRequest = new DefaultHttpRequest(HTTP_1_1, GET, uri)
+      rawRequest.addHeader("host", host+":8080")
+
+      assert(NettyRequest.extractHost(rawRequest) === host)
+    }
+
+    it ("should return the host in URI if present") {
+      val host = "test.host.com"
+      val uri = "http://"+ host + "/path/to/file"
+      val rawRequest = new DefaultHttpRequest(HTTP_1_1, GET, uri)
+
+      assert(NettyRequest.extractHost(rawRequest) === host)
+    }
+
+    it ("should return the host without port in URI if present") {
+      val host = "test.host.com"
+      val uri = "http://"+ host + ":8080/path/to/file"
+      val rawRequest = new DefaultHttpRequest(HTTP_1_1, GET, uri)
+
+      assert(NettyRequest.extractHost(rawRequest) === host)
+    }
+
+    it ("should prefer the host in URI if present in header as well") {
+      val headerHost = "test.host.com"
+      val uriHost = "uri.host.com"
+      val uri = "http://"+ uriHost + "/path/to/file"
+      val rawRequest = new DefaultHttpRequest(HTTP_1_1, GET, uri)
+      rawRequest.addHeader("host", headerHost)
+
+      assert(NettyRequest.extractHost(rawRequest) === uriHost)
+    }
+
+    it ("should return null if neither the header nor the URI has the host") {
+      val uri = "/path/to/file"
+      val rawRequest = new DefaultHttpRequest(HTTP_1_1, GET, uri)
+
+      assert(NettyRequest.extractHost(rawRequest) === null)
+    }
+  }
+
+  describe("extractPort") {
+
+    it ("should return None if host in header does not contain port") {
+      val host = "test.host.com"
+      val uri = "/path/to/file"
+      val rawRequest = new DefaultHttpRequest(HTTP_1_1, GET, uri)
+      rawRequest.addHeader("host", host)
+
+      assert(NettyRequest.extractPort(rawRequest) === None)
+    }
+
+    it ("should exclude the host and return the port stored in the headers") {
+      val port = 8080
+      val uri = "/path/to/file"
+      val rawRequest = new DefaultHttpRequest(HTTP_1_1, GET, uri)
+      rawRequest.addHeader("host", "test.mdialog.com:" + port.toString)
+
+      assert(NettyRequest.extractPort(rawRequest).get === port)
+    }
+
+    it ("should return the port in URI if present") {
+      val port = 9080
+      val uri = "http://test.mdialog.com:"+ port.toString + "/path/to/file"
+      val rawRequest = new DefaultHttpRequest(HTTP_1_1, GET, uri)
+
+      assert(NettyRequest.extractPort(rawRequest).get === port)
+    }
+
+    it ("should return None if port not present in URI") {
+      val uri = "http://test.host.com/path/to/file"
+      val rawRequest = new DefaultHttpRequest(HTTP_1_1, GET, uri)
+
+      assert(NettyRequest.extractPort(rawRequest) === None)
+    }
+
+    it ("should prefer the port in URI if present in header as well") {
+      val headerPort = 9090
+      val uriPort = 8080
+      val uri = "http://test.mdialog.com:"+ uriPort + "/path/to/file"
+      val rawRequest = new DefaultHttpRequest(HTTP_1_1, GET, uri)
+      rawRequest.addHeader("host", "test.mdialog.com:" + headerPort)
+
+      assert(NettyRequest.extractPort(rawRequest).get === uriPort)
     }
   }
 }

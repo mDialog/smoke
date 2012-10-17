@@ -10,6 +10,26 @@ import collection.JavaConversions._
 
 import smoke.Request
 
+object NettyRequest {
+  def extractHost(request: HttpRequest) = {
+    val u = new URI(request.getUri)
+    if (!Option(u.getHost).isEmpty) u.getHost
+    else if (request.containsHeader("host")) request.getHeader("host").split(":").head
+    else null
+  }
+
+  def extractPort(request: HttpRequest): Option[Int] = {
+    val u = new URI(request.getUri)
+    if (u.getPort >= 0) Some(u.getPort)
+    else if (request.containsHeader("host")) {
+      val result = request.getHeader("host").split(":")
+      if (result.length > 1) Some(result(1).toInt)
+      else None
+    }
+    else None
+  }
+}
+
 case class NettyRequest(address: SocketAddress, nettyRequest: HttpRequest)
     extends Request {
   private val u = new URI(nettyRequest.getUri)
@@ -18,8 +38,8 @@ case class NettyRequest(address: SocketAddress, nettyRequest: HttpRequest)
   val method = nettyRequest.getMethod.toString
   val uri = new URI(nettyRequest.getUri)
   val path = u.getPath
-  val host = u.getHost
-  val port = if (u.getPort >= 0) Some(u.getPort) else None
+  val host = NettyRequest.extractHost(nettyRequest)
+  val port = NettyRequest.extractPort(nettyRequest)
   val hostWithPort = host + (port map (":" + _.toString) getOrElse (""))
   val headers = nettyRequest.getHeaders map { e ⇒ (e.getKey.toLowerCase, e.getValue) } toMap
 
@@ -69,4 +89,5 @@ case class NettyRequest(address: SocketAddress, nettyRequest: HttpRequest)
 
   val body = nettyRequest.getContent.toString(CharsetUtil.UTF_8)
   val contentLength = nettyRequest.getContent.readableBytes
+
 }
