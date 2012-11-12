@@ -25,8 +25,7 @@ object NettyRequest {
       val result = request.getHeader("host").split(":")
       if (result.length > 1) Some(result(1).toInt)
       else None
-    }
-    else None
+    } else None
   }
 }
 
