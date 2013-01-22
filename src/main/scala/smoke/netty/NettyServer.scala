@@ -3,22 +3,34 @@ package smoke.netty
 import com.typesafe.config.Config
 import akka.actor._
 import akka.dispatch.{ Future, Promise }
-
 import java.net.InetSocketAddress
-
 import org.jboss.netty.bootstrap.ServerBootstrap
 import org.jboss.netty.handler.codec.http._
 import org.jboss.netty.channel._
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory
 import org.jboss.netty.buffer.ChannelBuffers
 import org.jboss.netty.util.CharsetUtil
-
 import collection.JavaConversions._
-
 import smoke._
+import org.jboss.netty.channel.group.ChannelGroup
+import org.jboss.netty.channel.group.DefaultChannelGroup
+import com.typesafe.config.ConfigException
 
 class NettyServer(implicit val config: Config, system: ActorSystem) extends Server {
-  val port = config.getInt("smoke.netty.port")
+  val ports: List[Int] = {
+    def optionallyGet[T](code: ⇒ T): Option[T] = {
+      try {
+        Some(code)
+      } catch {
+        case _: ConfigException.Missing ⇒ None
+      }
+    }
+
+    optionallyGet(config.getIntList("smoke.netty.ports")) match {
+      case Some(ports) ⇒ (for (p ← ports) yield p.toInt) toList
+      case None        ⇒ List[Int](config.getInt("smoke.netty.port"))
+    }
+  }
 
   val handler = new NettyServerHandler(log)
   val piplineFactory = new NettyServerPipelineFactory(handler)
@@ -26,22 +38,38 @@ class NettyServer(implicit val config: Config, system: ActorSystem) extends Serv
   val bootstrap = new ServerBootstrap(new NioServerSocketChannelFactory())
   bootstrap.setPipelineFactory(piplineFactory)
 
-  var channelOption: Option[Channel] = None
+  //  var channelOption: Option[Channel] = None
+  var allChannels: ChannelGroup = new DefaultChannelGroup();
 
   def setApplication(application: (Request) ⇒ Future[Response]) {
     handler.setApplication(application)
   }
 
   def start() {
-    channelOption = Some(bootstrap.bind(new InetSocketAddress(port)))
-    println("Netty now accepting HTTP connections on port " + port.toString)
+    println("Starting Netty:")
+    ports foreach { port ⇒
+      try {
+        val channel = bootstrap.bind(new InetSocketAddress(port))
+        allChannels.add(channel)
+        println("\taccepting HTTP connections on port " + port.toString)
+      } catch {
+        case e: Exception ⇒ println("\tERROR - not listening on port " + port)
+      }
+    }
+
+    if (allChannels.isEmpty) {
+      println("No ports available: shutting down")
+      system.shutdown
+    }
   }
 
   def stop() {
-    channelOption map { channel ⇒
+    println("Stopping Netty:")
+    allChannels.iterator map { channel ⇒
       channel.close.awaitUninterruptibly()
-      println("Netty no longer accepting HTTP connections")
+      println("\tchannel " + channel)
     }
+    println("Netty no longer accepting HTTP connections")
   }
 }
 
