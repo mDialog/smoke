@@ -13,10 +13,7 @@ object Path {
 }
 
 object Seg {
-  def unapply(path: String): Option[List[String]] = path.split("/").toList match {
-    case "" :: rest ⇒ Some(rest) // skip a leading slash
-    case all        ⇒ Some(all)
-  }
+  def unapply(path: String): Option[List[String]] = Some(path.split("/").toList filter { !_.isEmpty })
 }
 
 object Params {
@@ -25,8 +22,8 @@ object Params {
 
 object FileExtension {
   def unapply(path: String): Option[String] = path.split('.').toList match {
-    case List() ⇒ None
-    case all    ⇒ Some(all.last)
+    case all if (path.contains(".")) ⇒ Some(all.last)
+    case _                           ⇒ None
   }
 }
 
