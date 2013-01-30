@@ -20,8 +20,8 @@ class ExtractorsTest extends FunSpec {
     }
 
     it("should segment removing empty pieces and multiple leading '/'") {
-      val list = Seg.unapply("//1/2/3/4/5/6///7")
-      expect(7)(list.get.size)
+      val Seg(list) = "//1/2/3/4/5/6///7"
+      expect(7)(list.size)
     }
   }
 
@@ -32,6 +32,15 @@ class ExtractorsTest extends FunSpec {
 
     it("should not return a file extension") {
       expect(None)(FileExtension.unapply("foo"))
+    }
+  }
+
+  describe("Test Method") {
+    it("apply should return whether a request matches that method") {
+      val req = new test.TestRequest("http://test.com")
+      assert(GET(req))
+      assert(!POST(req))
+      assert(!PUT(req))
     }
   }
 }

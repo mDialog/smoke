@@ -31,6 +31,7 @@ class Method(method: String) {
   def unapply(req: Request) =
     if (req.method.equalsIgnoreCase(method)) Some(req)
     else None
+  def apply(req: Request) = req.method.equalsIgnoreCase(method)
 }
 
 object GET extends Method("GET")
