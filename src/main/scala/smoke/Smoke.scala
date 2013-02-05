@@ -1,20 +1,16 @@
 package smoke
 
 import scala.compat.Platform.currentTime
-import com.typesafe.config.ConfigFactory
 
 import akka.dispatch.{ Future, Promise, ExecutionContext }
 import akka.actor.ActorSystem
 import akka.util.Timeout
 import akka.util.duration._
+import com.mdialog.config.{ Config, BoxedConfig }
 
 import smoke.netty.NettyServer
 
-trait Smoke extends DelayedInit {
-
-  def configure() = { ConfigFactory.load() }
-
-  final implicit val config = configure()
+trait Smoke extends DelayedInit with Config {
 
   final implicit val system: ActorSystem = ActorSystem("Smoke", config)
   final implicit val dispatcher: ExecutionContext = system.dispatcher

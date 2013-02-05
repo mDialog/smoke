@@ -13,7 +13,8 @@ libraryDependencies ++= Seq(
   "io.netty" % "netty" % "3.6.2.Final",
   "com.typesafe.akka" % "akka-actor" % "2.0.3",
   "org.scalatest" %% "scalatest" % "1.7.1" % "test",
-  "com.typesafe.akka" % "akka-testkit" % "2.0.1" % "test"
+  "com.typesafe.akka" % "akka-testkit" % "2.0.1" % "test",
+  "com.mdialog" %% "config" % "0.4.0"
 )
 
 resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"

@@ -1,6 +1,5 @@
 package smoke.netty
 
-import com.typesafe.config.Config
 import akka.actor._
 import akka.dispatch.{ Future, Promise }
 import java.net.InetSocketAddress
@@ -15,20 +14,14 @@ import smoke._
 import org.jboss.netty.channel.group.ChannelGroup
 import org.jboss.netty.channel.group.DefaultChannelGroup
 import com.typesafe.config.ConfigException
+import com.mdialog.config.Config
 
-class NettyServer(implicit val config: Config, system: ActorSystem) extends Server {
-  val ports: List[Int] = {
-    def optionallyGet[T](code: ⇒ T): Option[T] = {
-      try {
-        Some(code)
-      } catch {
-        case _: ConfigException.Missing ⇒ None
-      }
-    }
+class NettyServer(implicit val system: ActorSystem) extends Server {
 
-    optionallyGet(config.getIntList("smoke.netty.ports")) match {
-      case Some(ports) ⇒ (for (p ← ports) yield p.toInt) toList
-      case None        ⇒ List[Int](config.getInt("smoke.netty.port"))
+  val ports: Seq[Int] = {
+    config.getIntOption("smoke.netty.port") match {
+      case Some(port) ⇒ Seq[Int](config.getInt("smoke.netty.port"))
+      case None       ⇒ config.getScalaList("smoke.netty.ports")
     }
   }
 

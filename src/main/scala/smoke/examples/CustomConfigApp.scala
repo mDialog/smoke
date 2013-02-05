@@ -3,14 +3,11 @@ package smoke.examples
 import smoke._
 
 import akka.actor._
-import com.typesafe.config.ConfigFactory
+import com.mdialog.config.Config
 
 object CustomConfigApp extends Smoke {
 
-  override def configure() = {
-    ConfigFactory.load("configuration.properties")
-      .withFallback(ConfigFactory.load())
-  }
+  Config.reconfigure("configuration.properties")
 
   onRequest {
     case GET(Path("/example")) ⇒ reply {

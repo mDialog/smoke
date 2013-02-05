@@ -10,11 +10,10 @@ import ch.qos.logback.core.{ ConsoleAppender, FileAppender }
 import java.util.Date
 import java.text.SimpleDateFormat
 
-import com.typesafe.config.Config
+import com.mdialog.config.Config
 import akka.dispatch.Future
 
-trait Server {
-  val config: Config
+trait Server extends Config {
 
   protected lazy val accessLogger = {
     val logger = LoggerFactory.getLogger("smoke.Server")
