@@ -17,11 +17,18 @@ libraryDependencies ++= Seq(
   "com.mdialog" %% "config" % "0.4.0"
 )
 
-resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
+credentials in ThisBuild += Credentials(Path.userHome / ".mdialog.credentials")
 
-publishTo <<= version { (v: String) =>
-  if (v.trim.endsWith("-SNAPSHOT")) 
-    Some(Resolver.file("Snapshots", file("../mdialog.github.com/snapshots/")))
+resolvers in ThisBuild ++= Seq(
+    "mDialog snapshots" at "http://artifactory.mdialog.com/artifactory/snapshots",
+    "mDialog releases" at "http://artifactory.mdialog.com/artifactory/releases",
+    "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases"
+)
+
+publishTo in ThisBuild <<= version { (v: String) =>
+  if (v.trim.endsWith("-SNAPSHOT"))
+    Some("mDialog snapshots" at "http://artifactory.mdialog.com/artifactory/snapshots")
   else
-    Some(Resolver.file("Releases", file("../mdialog.github.com/releases/")))
+    Some("mDialog releases" at "http://artifactory.mdialog.com/artifactory/releases")
 }
+
