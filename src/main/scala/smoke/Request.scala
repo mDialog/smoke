@@ -13,6 +13,7 @@ trait Request {
   val ip: String
   val keepAlive: Boolean
   val headers: Map[String, String]
+  val timestamp: Long = System.currentTimeMillis
 
   val queryString: Option[String]
   val contentType: Option[String]

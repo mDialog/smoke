@@ -64,7 +64,7 @@ trait Server {
     val entry = request.ip + " - - " +
       "[" + logDateFormat.format(new Date()) + "] " +
       "\"" + request.method + " " + request.path + " " + request.version + "\" " +
-      response.statusCode + " " + response.contentLength
+      response.statusCode + " " + response.contentLength + " " + (System.currentTimeMillis - request.timestamp) + "ms"
 
     accessLogger.info(entry)
   }
