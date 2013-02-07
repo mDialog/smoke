@@ -3,7 +3,9 @@ package smoke
 trait ResponseData {
   def byteLength: Int
 }
-case class UTF8Data(data: String) extends ResponseData {
+case class UTF8Data(rawData: String) extends ResponseData {
+  def data = if (rawData == null) "" else rawData
+
   def byteLength = data.getBytes.length
 
   override def toString = data
