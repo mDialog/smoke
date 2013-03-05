@@ -2,7 +2,8 @@ package smoke.netty
 
 import com.typesafe.config.Config
 import akka.actor._
-import akka.dispatch.{ Future, Promise }
+import scala.concurrent.Future
+
 import java.net.InetSocketAddress
 import org.jboss.netty.bootstrap.ServerBootstrap
 import org.jboss.netty.handler.codec.http._
@@ -129,7 +130,7 @@ class NettyServerHandler(log: (Request, Response) ⇒ Unit)(implicit system: Act
   }
 
   var application: (Request) ⇒ Future[Response] = { request ⇒
-    Promise.successful(Response(ServiceUnavailable))
+    Future.successful(Response(ServiceUnavailable))
   }
 
   def setApplication(newApplication: (Request) ⇒ Future[Response]) {

@@ -3,10 +3,10 @@ package smoke
 import scala.compat.Platform.currentTime
 import com.typesafe.config.ConfigFactory
 
-import akka.dispatch.{ Future, Promise, ExecutionContext }
+import scala.concurrent.{ Future, ExecutionContext }
+import scala.concurrent.duration._
 import akka.actor.ActorSystem
 import akka.util.Timeout
-import akka.util.duration._
 
 import smoke.netty.NettyServer
 
@@ -28,7 +28,7 @@ trait Smoke extends DelayedInit {
 
   private var beforeFilter = { request: Request ⇒ request }
   private var responder = { request: Request ⇒
-    Promise.successful(Response(ServiceUnavailable)).future
+    Future.successful(Response(ServiceUnavailable))
   }
   private var afterFilter = { response: Response ⇒ response }
   private var errorHandler: PartialFunction[Throwable, Response] = {
@@ -47,7 +47,7 @@ trait Smoke extends DelayedInit {
         errorProne(x)
       } catch {
         case e: Exception ⇒
-          Promise.failed(e)
+          Future.failed(e)
       }
     }
 
@@ -72,11 +72,9 @@ trait Smoke extends DelayedInit {
 
   def afterShutdown(hook: ⇒ Unit) { shutdownHooks = shutdownHooks ::: List(hook _) }
 
-  //def reply(r: Response) = Promise.successful(r)
-
   def reply(action: ⇒ Response) = Future(action)
 
-  def fail(e: Exception) = Promise.failed(e)
+  def fail(e: Exception) = Future.failed(e)
 
   val executionStart: Long = currentTime
   var running = false

@@ -11,7 +11,7 @@ import java.util.Date
 import java.text.SimpleDateFormat
 
 import com.typesafe.config.Config
-import akka.dispatch.Future
+import scala.concurrent.Future
 
 trait Server {
   val config: Config

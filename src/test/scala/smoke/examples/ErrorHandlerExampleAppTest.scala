@@ -2,8 +2,8 @@ package smoke.examples
 
 import org.scalatest.{ FunSpec, BeforeAndAfterAll }
 
-import akka.dispatch.Await
-import akka.util.duration._
+import scala.concurrent.Await
+import scala.concurrent.duration._
 
 import smoke._
 import smoke.test._
