@@ -9,7 +9,7 @@ A thin DSL for building simple, fast, scalable, asynchronous HTTP services with 
 
 In your build.sbt
 
-    resolvers += "mDialog releases" at "http://mdialog.github.com/snapshots/"
+    resolvers += "mDialog snapshots" at "http://mdialog.github.com/snapshots/"
 
     libraryDependencies += "com.mdialog" %% "smoke" % "0.4.0-SNAPSHOT"
 
@@ -277,6 +277,6 @@ Unsure of where to start? Pick a TODO, or consider one of the following contribu
 
 ## Contributors
 
-Chris Dinn, Sebastian Hubbard, Matt MacAulay, Arron Norwell
+Chris Dinn, David Harcombe, Gaetan Hervouet, Sebastian Hubbard, Matt MacAulay, Arron Norwell, Sana Tapal
 
-**©2012 mDialog Corp. All rights reserved.**
+**©2013 mDialog Corp. All rights reserved.**
