@@ -504,14 +504,14 @@ class NettyRequestTest extends FunSpec {
       assert(NettyRequest.extractHost(rawRequest) === host)
     }
 
-    it("should prefer the host in URI if present in header as well") {
+    it("should prefer the host in header if present in the URI as well") {
       val headerHost = "test.host.com"
       val uriHost = "uri.host.com"
       val uri = "http://" + uriHost + "/path/to/file"
       val rawRequest = new DefaultHttpRequest(HTTP_1_1, GET, uri)
       rawRequest.addHeader("host", headerHost)
 
-      assert(NettyRequest.extractHost(rawRequest) === uriHost)
+      assert(NettyRequest.extractHost(rawRequest) === headerHost)
     }
 
     it("should return null if neither the header nor the URI has the host") {
