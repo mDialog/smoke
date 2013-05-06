@@ -265,6 +265,10 @@ This is the same way Smoke processes requests while your app is running.
 
 Read the API documentation here: [http://mdialog.github.com/api/smoke-0.3.0/](http://mdialog.github.com/api/smoke-0.3.0/)
 
+## Mailing list
+
+Send questions, comments or discussion topics to the mailing list <smoke@librelist.com>.
+
 ## License
 
 This project is released under the Apache License v2, for more details see the 'LICENSE' file.
