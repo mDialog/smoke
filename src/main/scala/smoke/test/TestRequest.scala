@@ -5,10 +5,10 @@ import smoke.Request
 import java.net.URI
 
 case class TestRequest(uriString: String,
-    method: String = "GET",
-    headers: Map[String, String] = Map.empty,
-    body: String = "",
-    keepAlive: Boolean = true) extends Request {
+  method: String = "GET",
+  headers: Seq[(String, String)] = Seq.empty,
+  body: String = "",
+  keepAlive: Boolean = true) extends Request {
   val version = "HTTP/1.1"
   val uri = new URI(uriString)
   val path = uri.getPath
@@ -23,8 +23,8 @@ case class TestRequest(uriString: String,
     case null      ⇒ None
   }
 
-  val contentType: Option[String] = headers.get("Content-Type")
-  val userAgent: Option[String] = headers.get("User-Agent")
+  val contentType: Option[String] = lastHeaderValue("Content-Type")
+  val userAgent: Option[String] = lastHeaderValue("User-Agent")
 
   val queryParams: Map[String, String] = queryString match {
     case Some(string) ⇒ parseParams(string)

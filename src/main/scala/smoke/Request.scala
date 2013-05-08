@@ -12,7 +12,7 @@ trait Request {
   val port: Option[Int]
   val ip: String
   val keepAlive: Boolean
-  val headers: Map[String, String]
+  val headers: Seq[(String, String)]
   val timestamp: Long = System.currentTimeMillis
 
   val queryString: Option[String]
@@ -35,6 +35,19 @@ trait Request {
     } toMap
 
   protected def decode(s: String) = URLDecoder.decode(s, "UTF-8")
+
+  def lastHeaderValue(header: String) =
+    allHeaderValues(header) match {
+      case list if !list.isEmpty ⇒ Some(list.last)
+      case _                     ⇒ None
+    }
+
+  def allHeaderValues(header: String) = headers.filter(h ⇒ h._1 == header) map { case (k, v) ⇒ v }
+
+  def concatenateHeaderValues(header: String) = allHeaderValues(header) match {
+    case x if x.isEmpty ⇒ None
+    case s              ⇒ Some(s.mkString(","))
+  }
 }
 
 object Request {
