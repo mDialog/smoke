@@ -249,7 +249,7 @@ class NettyRequestTest extends FunSpec {
         assert(request7.ip === "unknown")
       }
 
-      it("should ignore reserved IPs in the x-forwarded-for") {
+      it("should describe reserved IPs in the x-forwarded-for") {
         val rawRequest = new DefaultHttpRequest(HTTP_1_1, GET, "http://test.host")
         rawRequest.setHeader("X-Forwarded-For", "2.2.2.2, 3.3.3.3")
         val request = NettyRequest(new InetSocketAddress("23.2.1.4", 80), rawRequest)
@@ -328,7 +328,7 @@ class NettyRequestTest extends FunSpec {
       rawRequest.setHeader("User-Agent", "TestRequest/1.0.0")
       val request = NettyRequest(address, rawRequest)
 
-      assert(request.headers === Map(
+      assert(request.headers === Seq(
         "content-type" -> "test/html",
         "user-agent" -> "TestRequest/1.0.0"))
     }

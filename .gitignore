@@ -9,3 +9,5 @@ config.sqlite
 .classpath
 .project
 .settings
+.ensime
+*.sc

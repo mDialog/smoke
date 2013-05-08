@@ -104,17 +104,41 @@ class TestRequestTest extends FunSpec {
   describe("headers") {
     it("should return empty map when unset") {
       val request = TestRequest("http://test.host/path")
-      assert(request.headers === Map.empty)
+      assert(request.headers === Seq.empty)
     }
 
     it("should return allow headers to be set during initialization") {
       val request = TestRequest("http://test.host",
-        headers = Map(
-          "content-type" -> "text/html; charset=UTF-8",
-          "user-agent" -> "SmokeTest/1.0.0"))
-      assert(request.headers === Map(
-        "content-type" -> "text/html; charset=UTF-8",
-        "user-agent" -> "SmokeTest/1.0.0"))
+        headers = Seq(("content-type", "text/html; charset=UTF-8"),
+          ("user-agent", "SmokeTest/1.0.0")))
+      assert(request.headers === Seq(("content-type", "text/html; charset=UTF-8"),
+        ("user-agent", "SmokeTest/1.0.0")))
+    }
+
+    describe("multiple headers") {
+      val request = TestRequest("http://test.host",
+        headers = Seq(("content-type", "text/html; charset=UTF-8"),
+          ("x-foo", "Foo"),
+          ("x-foo", "Bar"),
+          ("user-agent", "SmokeTest/1.0.0")))
+      it("should allow them") {
+        assert(request.headers == Seq(("content-type", "text/html; charset=UTF-8"),
+          ("x-foo", "Foo"),
+          ("x-foo", "Bar"),
+          ("user-agent", "SmokeTest/1.0.0")))
+      }
+
+      it("should be able to fetch them all") {
+        assert(request.allHeaderValues("x-foo") == Seq("Foo", "Bar"))
+      }
+
+      it("should be able to fetch the last one") {
+        assert(request.lastHeaderValue("x-foo") == Some("Bar"))
+      }
+
+      it("should be able to make a concatenated String of all values for a given header") {
+        assert(request.concatenateHeaderValues("x-foo") == Some("Foo,Bar"))
+      }
     }
   }
 
@@ -126,7 +150,7 @@ class TestRequestTest extends FunSpec {
 
     it("should return Content-Type header when set") {
       val request = TestRequest("http://test.host",
-        headers = Map("Content-Type" -> "text/html; charset=UTF-8"))
+        headers = Seq(("Content-Type", "text/html; charset=UTF-8")))
       assert(request.contentType === Some("text/html; charset=UTF-8"))
     }
   }
@@ -139,7 +163,7 @@ class TestRequestTest extends FunSpec {
 
     it("should return User-Agent header when set") {
       val request = TestRequest("http://test.host",
-        headers = Map("User-Agent" -> "SmokeTest/1.0.0"))
+        headers = Seq("User-Agent" -> "SmokeTest/1.0.0"))
       assert(request.userAgent === Some("SmokeTest/1.0.0"))
     }
   }
@@ -198,7 +222,7 @@ class TestRequestTest extends FunSpec {
 
     it("should return decoded params when present with Content-Type") {
       val request = TestRequest("http://test.host/path?val=some+value",
-        headers = Map("Content-Type" -> "application/x-www-form-urlencoded"),
+        headers = Seq("Content-Type" -> "application/x-www-form-urlencoded"),
         body = "val=some+value")
       assert(request.formParams === Map("val" -> "some value"))
     }
@@ -207,7 +231,7 @@ class TestRequestTest extends FunSpec {
   describe("params") {
     it("should return both query and form params") {
       val request = TestRequest("http://test.host/path?query+val=some+value",
-        headers = Map("Content-Type" -> "application/x-www-form-urlencoded"),
+        headers = Seq("Content-Type" -> "application/x-www-form-urlencoded"),
         body = "form+val=other+value")
       assert(request.params === Map(
         "query val" -> "some value",

@@ -30,7 +30,7 @@ object NettyRequest {
 }
 
 case class NettyRequest(address: SocketAddress, nettyRequest: HttpRequest)
-    extends Request {
+  extends Request {
   private val u = new URI(nettyRequest.getUri)
 
   val version = nettyRequest.getProtocolVersion.toString
@@ -40,16 +40,20 @@ case class NettyRequest(address: SocketAddress, nettyRequest: HttpRequest)
   val host = NettyRequest.extractHost(nettyRequest)
   val port = NettyRequest.extractPort(nettyRequest)
   val hostWithPort = host + (port map (":" + _.toString) getOrElse (""))
-  val headers = nettyRequest.getHeaders map { e ⇒ (e.getKey.toLowerCase, e.getValue) } toMap
+  val headers = nettyRequest.getHeaders map { e ⇒ (e.getKey.toLowerCase, e.getValue) } toSeq
 
   val ip = {
-    val xForwardedForIps = headers.get("x-forwarded-for") match {
-      case Some(header) ⇒ header.split(",")
+    // If there are multiple x-forwarded-for headers, we either concatenate them 
+    // into a single ","-delimited String, or just pick the last one (since that's the value
+    // in which we are interested)
+    val xForwardedFor = lastHeaderValue("x-forwarded-for")
+
+    val xForwardedForIps: Seq[String] = xForwardedFor match {
+      case Some(ips) ⇒ ips.split(",")
         .map(h ⇒ h.trim)
         .filter(h ⇒ !Request.isTrusted(h))
         .toSeq
-
-      case None ⇒ Seq.empty[String]
+      case None ⇒ Seq.empty
     }
 
     xForwardedForIps.isEmpty match {
