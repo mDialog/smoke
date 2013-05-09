@@ -43,21 +43,21 @@ class ResponseTest extends FunSpec {
     }
 
     it("should serialize with single header but without body") {
-      val response = Response(Found, Map("Location" -> "http://mdialog.com/"))
+      val response = Response(Found, Seq("Location" -> "http://mdialog.com/"))
 
       var expected = "HTTP/1.1 302 Found\r\nLocation: http://mdialog.com/\r\n"
       assert(response.toMessage === expected)
     }
 
     it("should serialize with multiple headers but without body") {
-      val response = Response(Found, Map("Location" -> "http://mdialog.com/", "Accept" -> "*/*"))
+      val response = Response(Found, Seq("Location" -> "http://mdialog.com/", "Accept" -> "*/*"))
 
       var expected = "HTTP/1.1 302 Found\r\nLocation: http://mdialog.com/\r\nAccept: */*\r\n"
       assert(response.toMessage === expected)
     }
 
     it("should serialize with body") {
-      val headers = Map("Server" -> "scalatest", "Accept" -> "*/*")
+      val headers = Seq("Server" -> "scalatest", "Accept" -> "*/*")
       val body = "this is just a test"
       val response = Response(Ok, headers, body)
 

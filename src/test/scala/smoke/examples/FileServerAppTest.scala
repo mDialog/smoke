@@ -25,7 +25,7 @@ class FileServerAppTest extends FunSpec with BeforeAndAfterAll {
     it("should have content-type image/jpeg") {
       val request = TestRequest("/plant.jpg")
       val response = Await.result(app.application(request), 2 seconds)
-      assert(response.headers("Content-Type") === "image/jpeg")
+      assert(response.lastHeaderValue("Content-Type") === Some("image/jpeg"))
     }
 
     it("body data should match the served file") {

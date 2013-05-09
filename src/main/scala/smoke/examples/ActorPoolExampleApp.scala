@@ -28,7 +28,7 @@ object ActorPoolExampleApp extends Smoke {
   }
 
   after { response ⇒
-    val headers = response.headers + ("Server" -> "ActorPoolExampleApp/0.0.1")
+    val headers = response.headers :+ ("Server", "ActorPoolExampleApp/0.0.1")
     Response(response.status, headers, response.body)
   }
 

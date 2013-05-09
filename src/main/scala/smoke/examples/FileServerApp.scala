@@ -18,7 +18,7 @@ object FileServerApp extends Smoke {
 
         Response(Ok,
           body = RawData(bytes),
-          headers = Map("Content-Type" -> (extension match {
+          headers = Seq("Content-Type" -> (extension match {
             case "gif"          ⇒ "image/gif"
             case "jpg" | "jpeg" ⇒ "image/jpeg"
             case _              ⇒ "application/octet-stream"
@@ -31,7 +31,7 @@ object FileServerApp extends Smoke {
   }
 
   after { response ⇒
-    val headers = response.headers ++ Map(
+    val headers = response.headers ++ Seq(
       "Server" -> "FileServerApp/0.0.1",
       "Connection" -> "Close")
     Response(response.status, headers, response.body)

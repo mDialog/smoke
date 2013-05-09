@@ -19,14 +19,27 @@ object ResponseData {
 }
 
 case class Response(status: ResponseStatus,
-    headers: Map[String, String] = Map.empty,
-    body: ResponseData = "") {
+  headers: Seq[(String, String)] = Seq.empty,
+  body: ResponseData = "") {
   def statusCode = status.code
   def statusMessage = status.message
 
   def toMessage = messageStatus + messageHeaders + messageBody
 
   val contentLength = body.byteLength
+
+  def lastHeaderValue(header: String) =
+    allHeaderValues(header) match {
+      case list if !list.isEmpty ⇒ Some(list.last)
+      case _                     ⇒ None
+    }
+
+  def allHeaderValues(header: String) = headers.filter(h ⇒ h._1 == header) map { case (k, v) ⇒ v }
+
+  def concatenateHeaderValues(header: String) = allHeaderValues(header) match {
+    case x if x.isEmpty ⇒ None
+    case s              ⇒ Some(s.mkString(","))
+  }
 
   private def messageStatus = "HTTP/1.1 " + status.code + " " + status.message + "\r\n"
   private def messageHeaders = headers map { t ⇒ t._1 + ": " + t._2 } match {
