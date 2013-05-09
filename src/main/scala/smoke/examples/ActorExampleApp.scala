@@ -20,7 +20,7 @@ object ActorExampleApp extends Smoke {
   onRequest(actor ? _ mapTo manifest[Response])
 
   after { response ⇒
-    val headers = response.headers + ("Server" -> "ActorExampleApp/0.0.1")
+    val headers = response.headers :+ ("Server", "ActorExampleApp/0.0.1")
     Response(response.status, headers, response.body)
   }
 }

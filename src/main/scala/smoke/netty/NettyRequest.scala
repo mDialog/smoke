@@ -30,7 +30,7 @@ object NettyRequest {
 }
 
 case class NettyRequest(address: SocketAddress, nettyRequest: HttpRequest)
-  extends Request {
+    extends Request {
   private val u = new URI(nettyRequest.getUri)
 
   val version = nettyRequest.getProtocolVersion.toString

@@ -9,7 +9,7 @@ case class TestRequest(uriString: String,
     headers: Seq[(String, String)] = Seq.empty,
     body: String = "",
     keepAlive: Boolean = true) extends Request {
-s of the same name.
+
   val version = "HTTP/1.1"
   val uri = new URI(uriString)
   val path = uri.getPath

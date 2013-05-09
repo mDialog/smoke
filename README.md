@@ -123,9 +123,9 @@ To get a feel for the power of Akka's composable futures, [read the documentatio
 
 ### Responses
 
-Responses are built using three parameters: a status code object, a `Map` of headers and a request body.
+Responses are built using three parameters: a status code object, a `Seq[(String,String)]` of headers and a request body.
 
-    Response(Ok, Map("Location" -> resource.location), resource.toJson)
+    Response(Ok, Seq(("Location", resource.location)), resource.toJson)
 
 ## Before/After filters
 
