@@ -2,7 +2,7 @@ package smoke
 
 import java.net.{ URI, URLDecoder }
 
-trait Request {
+trait Request extends Headers {
   val version: String
   val method: String
   val uri: URI
@@ -35,19 +35,6 @@ trait Request {
     } toMap
 
   protected def decode(s: String) = URLDecoder.decode(s, "UTF-8")
-
-  def lastHeaderValue(header: String) =
-    allHeaderValues(header) match {
-      case list if !list.isEmpty ⇒ Some(list.last)
-      case _                     ⇒ None
-    }
-
-  def allHeaderValues(header: String) = headers.filter(h ⇒ h._1 == header) map { case (k, v) ⇒ v }
-
-  def concatenateHeaderValues(header: String) = allHeaderValues(header) match {
-    case x if x.isEmpty ⇒ None
-    case s              ⇒ Some(s.mkString(","))
-  }
 }
 
 object Request {
