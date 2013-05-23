@@ -6,7 +6,7 @@ import java.net.URI
 
 case class TestRequest(uriString: String,
     method: String = "GET",
-    headers: Map[String, String] = Map.empty,
+    headers: Seq[(String, String)] = Seq.empty,
     body: String = "",
     keepAlive: Boolean = true) extends Request {
   val version = "HTTP/1.1"
