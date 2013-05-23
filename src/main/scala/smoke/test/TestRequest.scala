@@ -5,10 +5,10 @@ import smoke.Request
 import java.net.URI
 
 case class TestRequest(uriString: String,
-  method: String = "GET",
-  headers: Seq[(String, String)] = Seq.empty,
-  body: String = "",
-  keepAlive: Boolean = true) extends Request {
+    method: String = "GET",
+    headers: Seq[(String, String)] = Seq.empty,
+    body: String = "",
+    keepAlive: Boolean = true) extends Request {
   val version = "HTTP/1.1"
   val uri = new URI(uriString)
   val path = uri.getPath

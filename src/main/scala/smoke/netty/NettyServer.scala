@@ -36,7 +36,8 @@ class NettyServer(implicit val config: Config, system: ActorSystem) extends Serv
   val handler = new NettyServerHandler(log)
   val piplineFactory = new NettyServerPipelineFactory(handler)
 
-  val bootstrap = new ServerBootstrap(new NioServerSocketChannelFactory())
+  val channelFactory = new NioServerSocketChannelFactory()
+  val bootstrap = new ServerBootstrap(channelFactory)
   bootstrap.setPipelineFactory(piplineFactory)
 
   //  var channelOption: Option[Channel] = None
@@ -71,6 +72,7 @@ class NettyServer(implicit val config: Config, system: ActorSystem) extends Serv
       println("\tchannel " + channel)
     }
     println("Netty no longer accepting HTTP connections")
+    channelFactory.releaseExternalResources()
   }
 }
 
