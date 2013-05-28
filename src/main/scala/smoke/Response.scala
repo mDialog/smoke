@@ -19,8 +19,8 @@ object ResponseData {
 }
 
 case class Response(status: ResponseStatus,
-  headers: Seq[(String, String)] = Seq.empty,
-  body: ResponseData = "") extends Headers {
+    headers: Seq[(String, String)] = Seq.empty,
+    body: ResponseData = "") extends Headers {
   def statusCode = status.code
   def statusMessage = status.message
 
