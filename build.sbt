@@ -2,7 +2,7 @@ name := "smoke"
 
 organization := "com.mdialog"
 
-version := "0.3.7"
+version := "0.3.8-SNAPSHOT"
 
 scalaVersion := "2.9.1"
 
@@ -19,7 +19,7 @@ libraryDependencies ++= Seq(
 resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
 
 publishTo <<= version { (v: String) =>
-  if (v.trim.endsWith("-SNAPSHOT")) 
+  if (v.trim.endsWith("-SNAPSHOT"))
     Some(Resolver.file("Snapshots", file("../mdialog.github.com/snapshots/")))
   else
     Some(Resolver.file("Releases", file("../mdialog.github.com/releases/")))
