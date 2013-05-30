@@ -38,7 +38,7 @@ Run it with sbt
 
 Smoke provides a DSL for building HTTP services using a simple request/response pattern, where each response is provided as an Akka Future. Akka provides a powerful toolkit to control the creation and execution of Futures; spend some time with that project's [excellent documentation](http://akka.io/docs) to get a feel for how it works.
 
-With the Smoke trait, you get access to the tools necessary to build a robust Akka-based application. That includes to an `ActorSystem`, `Dispatcher`, default timeout and `Config` object. 
+With the Smoke trait, you get access to the tools necessary to build a robust Akka-based application. That includes to an `ActorSystem`, `Dispatcher`, default timeout and `Config` object.
 
     trait Smoke {
       final implicit val config = configure()
@@ -122,7 +122,7 @@ Even better, you can use the tools provided by Akka to compose your responder fu
       }
     }
 
-To get a feel for the power of Akka's composable futures, [read the documentation](http://doc.akka.io/docs/akka/snapshot/scala/futures.html).		
+To get a feel for the power of Scala's composable futures, [read the documentation](http://doc.akka.io/docs/akka/snapshot/scala/futures.html).
 
 ### Responses
 
@@ -173,6 +173,10 @@ Smoke will shutdown the server and `ActorSystem` when the process receives a `TE
       println("No longer responding to requests.")
     }
 
+## SSL and Client Certificates
+
+Smoke supports SSL, including optional use of client certificates. See the configuration section for more information.
+
 ## Configuration
 
 There are a few of configuration options. Like Akka, Smoke uses [Typesafe Config Library](https://github.com/typesafehub/config). You can override any of the default configuration options by adding an `application.conf` file to your project.
@@ -180,12 +184,40 @@ There are a few of configuration options. Like Akka, Smoke uses [Typesafe Config
     smoke {
       timeout = 2s
 
-      log-type = "stdout" # alternatively, set to "file" 
+      log-type = "stdout" # alternatively, set to "file"
       log-file = "access.log" # if log-type is "file"
 
-      # Smoke uses Netty, but can be extended to use any server backend
-      netty {
-        port = 7771
+      port = 7771
+
+      #Multiple ports may be used by specifying a list, overriding the port setting
+      ## ports = [7771, 7772]
+
+      https {
+        #If enabled, connections will be secured using SSL
+        enabled = false
+
+        # Server Authentication
+
+        # The location of the jks format key store to be used
+        # If not provided, the system property javax.net.ssl.keyStore is used
+        ##key-store = "test.jks"
+
+        # The password for the key store.
+        # If not provided, the system property javax.net.ssl.keyStorePassword is used
+        ##key-store-password = "test-password"
+
+        # Client Authentication
+
+        # Set to true to enable SSL client certificates (2 way handshake)
+        use-client-auth = false
+
+        # The location of the jks format trust store to be used
+        # If not provided, the system property javax.net.ssl.trustStore is used
+        ##trust-store = "test.jks"
+
+        # The password for the trust store.
+        # If not provided, the system property javax.net.ssl.trustStorePassword is used
+        ##trust-store-password = "test-password"
       }
     }
 
@@ -194,7 +226,7 @@ may override the Smoke configure() method. For example, to include
 extra config from a properties file, you would do the following:
 
     override def configure() = {
-      ConfigFactory.load("configuration.properties")
+      ConfigFactory.parseResources("configuration.properties")
         .withFallback(ConfigFactory.load())
     }
 
@@ -207,7 +239,7 @@ Clone the repository, run one of the sample apps:
 Make requests:
 
     curl -i http://localhost:7771/example
-    
+
 ## Testing
 
 Unit testing components of your application that interact with Smoke is made easier using the provided TestRequest class, which inherits from the Request trait.
@@ -221,7 +253,7 @@ Unit testing components of your application that interact with Smoke is made eas
 
 Using this class along with the tools provided by Akka allows testing of your application's responder function.
 
-You can test an app by initializing and shutting it down inside a test suite. Invoke the application method directly, passing it a TestRequest. 
+You can test an app by initializing and shutting it down inside a test suite. Invoke the application method directly, passing it a TestRequest.
 
     import org.scalatest.{ FunSpec, BeforeAndAfterAll }
 
@@ -256,10 +288,6 @@ You can test an app by initializing and shutting it down inside a test suite. In
     }
 
 This is the same way Smoke processes requests while your app is running.
-
-## TODO
-
-  - SSL support (in the meantime, we use [stunnel](http://www.stunnel.org/))
 
 ## Documentation
 
