@@ -11,37 +11,26 @@ import org.jboss.netty.channel._
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory
 import org.jboss.netty.buffer.ChannelBuffers
 import org.jboss.netty.util.CharsetUtil
-import collection.JavaConversions._
 import smoke._
 import org.jboss.netty.channel.group.ChannelGroup
 import org.jboss.netty.channel.group.DefaultChannelGroup
-import com.typesafe.config.ConfigException
+import collection.JavaConversions._
 
-class NettyServer(implicit val config: Config, system: ActorSystem) extends Server {
-  val ports: List[Int] = {
-    def optionallyGet[T](code: ⇒ T): Option[T] = {
-      try {
-        Some(code)
-      } catch {
-        case _: ConfigException.Missing ⇒ None
-      }
-    }
+class NoPortsException extends Exception("No ports configured to bind to.")
 
-    optionallyGet(config.getIntList("smoke.netty.ports")) match {
-      case Some(ports) ⇒ (for (p ← ports) yield p.toInt) toList
-      case None        ⇒ List[Int](config.getInt("smoke.netty.port"))
-    }
-  }
-
-  val handler = new NettyServerHandler(log)
-  val piplineFactory = new NettyServerPipelineFactory(handler)
+class NettyServer(implicit val config: Config, system: ActorSystem)
+    extends Server
+    with ConfigHelpers {
 
   val channelFactory = new NioServerSocketChannelFactory()
-  val bootstrap = new ServerBootstrap(channelFactory)
-  bootstrap.setPipelineFactory(piplineFactory)
+  val handler = new NettyServerHandler(log)
 
-  //  var channelOption: Option[Channel] = None
-  var allChannels: ChannelGroup = new DefaultChannelGroup();
+  case class BindInfo(bootstrap: ServerBootstrap, port: Int, protocol: String)
+
+  val connectList: Seq[BindInfo] = bootstrap("smoke.ports", "smoke.port",
+    ssl = config.getBooleanOption("smoke.https.enabled").getOrElse(false))
+
+  var allChannels: ChannelGroup = new DefaultChannelGroup()
 
   def setApplication(application: (Request) ⇒ Future[Response]) {
     handler.setApplication(application)
@@ -49,19 +38,21 @@ class NettyServer(implicit val config: Config, system: ActorSystem) extends Serv
 
   def start() {
     println("Starting Netty:")
-    ports foreach { port ⇒
+    connectList foreach { info ⇒
       try {
-        val channel = bootstrap.bind(new InetSocketAddress(port))
+        val channel = info.bootstrap.bind(new InetSocketAddress(info.port))
         allChannels.add(channel)
-        println("\taccepting HTTP connections on port " + port.toString)
+        println("\taccepting %s connections on port %d".format(info.protocol, info.port))
       } catch {
-        case e: Exception ⇒ println("\tERROR - not listening on port " + port)
+        case e: Exception ⇒
+          println("\tERROR - not listening on port " + info.port)
+          throw e
       }
     }
 
     if (allChannels.isEmpty) {
-      println("No ports available: shutting down")
-      system.shutdown
+      println("\tERROR - no ports configured to bind to")
+      throw new NoPortsException
     }
   }
 
@@ -74,19 +65,37 @@ class NettyServer(implicit val config: Config, system: ActorSystem) extends Serv
     println("Netty no longer accepting HTTP connections")
     channelFactory.releaseExternalResources()
   }
-}
 
-class NettyServerPipelineFactory(handler: NettyServerHandler)
-    extends ChannelPipelineFactory {
-  def getPipeline = {
-    val p = Channels.pipeline
+  private def bootstrap(listPortsPath: String, singlePortPath: String, ssl: Boolean = false) = {
+    val factory = new ChannelPipelineFactory {
 
-    p.addLast("decoder", new HttpRequestDecoder)
-    p.addLast("aggregator", new HttpChunkAggregator(1048576))
-    p.addLast("encoder", new HttpResponseEncoder)
-    p.addLast("deflater", new HttpContentCompressor)
-    p.addLast("handler", handler)
-    p
+      val sslHelper = if (ssl) Some(SSLHelper(config)) else None
+
+      def getPipeline = {
+        val p = Channels.pipeline
+
+        if (ssl) {
+          p.addLast("ssl", sslHelper.get.newHandler)
+        }
+
+        p.addLast("decoder", new HttpRequestDecoder)
+        p.addLast("aggregator", new HttpChunkAggregator(1048576))
+        p.addLast("encoder", new HttpResponseEncoder)
+        p.addLast("deflater", new HttpContentCompressor)
+        p.addLast("handler", handler)
+        p
+      }
+    }
+
+    val protocol = if (ssl) "HTTPS" else "HTTP"
+
+    val bootstrap = new ServerBootstrap(channelFactory)
+    bootstrap.setPipelineFactory(factory)
+
+    val ports: List[Int] = config.getIntListOption(listPortsPath).getOrElse(
+      config.getIntOption(singlePortPath).toList)
+
+    ports map { p ⇒ BindInfo(bootstrap, p, protocol) }
   }
 }
 
@@ -107,8 +116,10 @@ class NettyServerHandler(log: (Request, Response) ⇒ Unit)(implicit system: Act
       val nettyResponse = new DefaultHttpResponse(HttpVersion.HTTP_1_1, status)
 
       body match {
-        case utf8: UTF8Data ⇒ nettyResponse.setContent(ChannelBuffers.copiedBuffer(utf8.data, CharsetUtil.UTF_8))
-        case raw: RawData   ⇒ nettyResponse.setContent(ChannelBuffers.copiedBuffer(raw.data))
+        case utf8: UTF8Data ⇒ nettyResponse.setContent(
+          ChannelBuffers.copiedBuffer(utf8.data, CharsetUtil.UTF_8))
+        case raw: RawData ⇒ nettyResponse.setContent(
+          ChannelBuffers.copiedBuffer(raw.data))
       }
 
       if (request.keepAlive) {
