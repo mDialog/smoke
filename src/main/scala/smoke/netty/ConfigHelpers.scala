@@ -18,6 +18,9 @@ class BoxedConfig(val config: Config) {
   def getIntListOption(path: String) =
     optionallyGet(config.getIntList(path).toList.asInstanceOf[List[Int]])
 
+  def getScalaIntList(path: String) =
+    config.getIntList(path).toList.asInstanceOf[List[Int]]
+
   def getIntOption(path: String) = optionallyGet(config.getInt(path))
 
   def getStringOption(path: String) = optionallyGet(config.getString(path))
