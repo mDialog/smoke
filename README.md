@@ -11,7 +11,7 @@ In your build.sbt
 
     resolvers += "mDialog snapshots" at "http://mdialog.github.com/snapshots/"
 
-    libraryDependencies += "com.mdialog" %% "smoke" % "0.4.0-SNAPSHOT"
+    libraryDependencies += "com.mdialog" %% "smoke" % "0.5.1-SNAPSHOT"
 
 Smoke 0.5.0 is made for use with Scala 2.10 and Akka 2.2. If you're using an older
 version of Scala, consider Smoke [0.3.0](https://github.com/mDialog/smoke/tree/5a0038099ff67113234fb8342a7328df6be1e9e4). 
@@ -187,14 +187,20 @@ There are a few of configuration options. Like Akka, Smoke uses [Typesafe Config
       log-type = "stdout" # alternatively, set to "file"
       log-file = "access.log" # if log-type is "file"
 
-      port = 7771
+      error-log-type = "stdout" # alternatively, set to "file"
+      error-log-file = "error.log" # used if log-type set to "file"
+      error-log-verbose = false
 
-      #Multiple ports may be used by specifying a list, overriding the port setting
-      ## ports = [7771, 7772]
+      http {
+        #Multiple ports may be used by specifying more than one port in this list
+        ports = [7771]
+      }
 
       https {
-        #If enabled, connections will be secured using SSL
-        enabled = false
+
+        #Multiple ports may be used by specifying a list, overriding the port setting
+        #(Set empty to disable http)
+        ports = []
 
         # Server Authentication
 
