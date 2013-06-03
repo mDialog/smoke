@@ -9,6 +9,7 @@ import ch.qos.logback.core.{ ConsoleAppender, FileAppender }
 
 import java.util.Date
 import java.text.SimpleDateFormat
+import java.io._
 
 import com.typesafe.config.Config
 import akka.dispatch.Future
@@ -58,6 +59,48 @@ trait Server {
     logger
   }
 
+  protected lazy val errorLogger = {
+    val logger = LoggerFactory.getLogger("smoke.Server.error")
+      .asInstanceOf[Logger]
+
+    logger.setAdditive(false)
+    val context = logger.getLoggerContext
+
+    config.getString("smoke.error-log-type") match {
+      case "file" ⇒
+        val fileEncoder = new PatternLayoutEncoder()
+        fileEncoder.setContext(context)
+        fileEncoder.setPattern("%message%n")
+        fileEncoder.start()
+
+        val logFile = config.getString("smoke.error-log-file")
+        val fileAppender = new FileAppender[ILoggingEvent]();
+        fileAppender.setContext(context);
+        fileAppender.setEncoder(fileEncoder);
+        fileAppender.setFile(logFile)
+        fileAppender.start();
+
+        logger.addAppender(fileAppender)
+
+      case "stdout" ⇒
+        val consoleEncoder = new PatternLayoutEncoder()
+        consoleEncoder.setContext(context)
+        consoleEncoder.setPattern("%message%n")
+        consoleEncoder.start()
+
+        val consoleAppender = new ConsoleAppender[ILoggingEvent]();
+        consoleAppender.setContext(context);
+        consoleAppender.setEncoder(consoleEncoder);
+        consoleAppender.start();
+
+        logger.addAppender(consoleAppender)
+
+      case _ ⇒
+    }
+
+    logger
+  }
+
   val logDateFormat = new SimpleDateFormat("dd/MMM/yyyy:HH:mm:ss Z")
 
   val log = { (request: Request, response: Response) ⇒
@@ -67,6 +110,20 @@ trait Server {
       response.statusCode + " " + response.contentLength + " " + (System.currentTimeMillis - request.timestamp) + "ms"
 
     accessLogger.info(entry)
+  }
+
+  val errorLogVerbose = config.getBoolean("smoke.error-log-verbose")
+
+  val errorLog = { (t: Throwable, peerSocketAddress: String, channelId: String) ⇒
+    val entry = "[" + logDateFormat.format(new Date()) + "] [" +
+      peerSocketAddress + "] [id " + channelId + "] " +
+      (if (errorLogVerbose) {
+        val sw = new StringWriter
+        t.printStackTrace(new PrintWriter(sw))
+        sw.toString
+      } else t.getMessage)
+
+    errorLogger.error(entry)
   }
 
   def setApplication(application: (Request) ⇒ Future[Response]): Unit

@@ -22,12 +22,13 @@ class NettyServer(implicit val config: Config, system: ActorSystem)
     with ConfigHelpers {
 
   val channelFactory = new NioServerSocketChannelFactory()
-  val handler = new NettyServerHandler(log)
+  val handler = new NettyServerHandler(log, errorLog)
 
   case class BindInfo(bootstrap: ServerBootstrap, port: Int, protocol: String)
 
-  val connectList: Seq[BindInfo] = bootstrap("smoke.ports", "smoke.port",
-    ssl = config.getBooleanOption("smoke.https.enabled").getOrElse(false))
+  val connectList: Seq[BindInfo] =
+    bootstrap(config.getScalaIntList("smoke.http.ports"), ssl = false) ++
+      bootstrap(config.getScalaIntList("smoke.https.ports"), ssl = true)
 
   var allChannels: ChannelGroup = new DefaultChannelGroup()
 
@@ -65,40 +66,42 @@ class NettyServer(implicit val config: Config, system: ActorSystem)
     channelFactory.releaseExternalResources()
   }
 
-  private def bootstrap(listPortsPath: String, singlePortPath: String, ssl: Boolean = false) = {
-    val factory = new ChannelPipelineFactory {
+  private def bootstrap(ports: Seq[Int], ssl: Boolean = false) =
+    if (ports.isEmpty)
+      Seq()
+    else {
+      val factory = new ChannelPipelineFactory {
 
-      val sslHelper = if (ssl) Some(SSLHelper(config)) else None
+        val sslHelper = if (ssl) Some(SSLHelper(config)) else None
 
-      def getPipeline = {
-        val p = Channels.pipeline
+        def getPipeline = {
+          val p = Channels.pipeline
 
-        if (ssl) {
-          p.addLast("ssl", sslHelper.get.newHandler)
+          if (ssl) {
+            p.addLast("ssl", sslHelper.get.newHandler)
+          }
+
+          p.addLast("decoder", new HttpRequestDecoder)
+          p.addLast("aggregator", new HttpChunkAggregator(1048576))
+          p.addLast("encoder", new HttpResponseEncoder)
+          p.addLast("deflater", new HttpContentCompressor)
+          p.addLast("handler", handler)
+          p
         }
-
-        p.addLast("decoder", new HttpRequestDecoder)
-        p.addLast("aggregator", new HttpChunkAggregator(1048576))
-        p.addLast("encoder", new HttpResponseEncoder)
-        p.addLast("deflater", new HttpContentCompressor)
-        p.addLast("handler", handler)
-        p
       }
+
+      val protocol = if (ssl) "HTTPS" else "HTTP"
+
+      val bootstrap = new ServerBootstrap(channelFactory)
+      bootstrap.setPipelineFactory(factory)
+
+      ports map { p ⇒ BindInfo(bootstrap, p, protocol) }
     }
-
-    val protocol = if (ssl) "HTTPS" else "HTTP"
-
-    val bootstrap = new ServerBootstrap(channelFactory)
-    bootstrap.setPipelineFactory(factory)
-
-    val ports: List[Int] = config.getIntListOption(listPortsPath).getOrElse(
-      config.getIntOption(singlePortPath).toList)
-
-    ports map { p ⇒ BindInfo(bootstrap, p, protocol) }
-  }
 }
 
-class NettyServerHandler(log: (Request, Response) ⇒ Unit)(implicit system: ActorSystem) extends SimpleChannelUpstreamHandler {
+class NettyServerHandler(
+    log: (Request, Response) ⇒ Unit,
+    errorLog: (Throwable, String, String) ⇒ Unit)(implicit system: ActorSystem) extends SimpleChannelUpstreamHandler {
   import HttpHeaders.Names._
   import HttpHeaders.Values._
 
@@ -126,7 +129,7 @@ class NettyServerHandler(log: (Request, Response) ⇒ Unit)(implicit system: Act
         nettyResponse.setHeader(CONNECTION, KEEP_ALIVE)
       }
 
-      headers foreach { pair ⇒ nettyResponse.setHeader(pair._1, pair._2) }
+      headers foreach { pair ⇒ nettyResponse.addHeader(pair._1, pair._2) }
 
       val channel = e.getChannel
       val future = channel.write(nettyResponse)
@@ -137,7 +140,10 @@ class NettyServerHandler(log: (Request, Response) ⇒ Unit)(implicit system: Act
 
       log(request, response)
     } onFailure {
-      case t: Throwable ⇒ throw t
+      case t: Throwable ⇒
+        val peerSocketAddress = e.getRemoteAddress.toString
+        errorLog(t, peerSocketAddress, e.getChannel.getId.toString)
+        e.getChannel.close
     }
   }
 
@@ -150,6 +156,9 @@ class NettyServerHandler(log: (Request, Response) ⇒ Unit)(implicit system: Act
   }
 
   override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) {
+    val exception = e.getCause()
+    val peerSocketAddress = e.getChannel.getRemoteAddress.toString
+    errorLog(exception, peerSocketAddress, e.getChannel.getId.toString)
     e.getChannel.close
   }
 }
