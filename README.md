@@ -11,7 +11,7 @@ In your build.sbt
 
     resolvers += "mDialog releases" at "http://mdialog.github.com/releases/"
 
-    libraryDependencies += "com.mdialog" %% "smoke" % "0.3.0"
+    libraryDependencies += "com.mdialog" %% "smoke" % "0.3.8-SNAPSHOT"
 
 ## Getting started
 
@@ -184,14 +184,20 @@ There are a few of configuration options. Like Akka, Smoke uses [Typesafe Config
       log-type = "stdout" # alternatively, set to "file"
       log-file = "access.log" # if log-type is "file"
 
-      port = 7771
+      error-log-type = "stdout" # alternatively, set to "file"
+      error-log-file = "error.log" # used if log-type set to "file"
+      error-log-verbose = false
 
-      #Multiple ports may be used by specifying a list, overriding the port setting
-      ## ports = [7771, 7772]
+      http {
+        #Multiple ports may be used by specifying more than one port in this list
+        ports = [7771]
+      }
 
       https {
-        #If enabled, connections will be secured using SSL
-        enabled = false
+
+        #Multiple ports may be used by specifying a list, overriding the port setting
+        #(Set empty to disable http)
+        ports = []
 
         # Server Authentication
 
