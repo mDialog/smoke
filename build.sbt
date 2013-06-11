@@ -10,10 +10,10 @@ scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-language:postf
 
 libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % "1.0.5",
-  "io.netty" % "netty" % "3.6.2.Final",
-  "com.typesafe.akka" %% "akka-actor" % "2.2-M3",
+  "io.netty" % "netty" % "3.6.6.Final",
+  "com.typesafe.akka" %% "akka-actor" % "2.2.0-RC1",
   "org.scalatest" %% "scalatest" % "1.9.1" % "test",
-  "com.typesafe.akka" %% "akka-testkit" % "2.2-M3" % "test"
+  "com.typesafe.akka" %% "akka-testkit" % "2.2.0-RC1" % "test"
 )
 
 resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
