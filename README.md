@@ -11,7 +11,7 @@ In your build.sbt
 
     resolvers += "mDialog snapshots" at "http://mdialog.github.com/snapshots/"
 
-    libraryDependencies += "com.mdialog" %% "smoke" % "0.5.1-SNAPSHOT"
+    libraryDependencies += "com.mdialog" %% "smoke" % "0.6.0"
 
 Smoke 0.5.0 is made for use with Scala 2.10 and Akka 2.2. If you're using an older
 version of Scala, consider Smoke [0.3.0](https://github.com/mDialog/smoke/tree/5a0038099ff67113234fb8342a7328df6be1e9e4). 
@@ -297,7 +297,7 @@ This is the same way Smoke processes requests while your app is running.
 
 ## Documentation
 
-Read the API documentation here: [http://mdialog.github.com/api/smoke-0.3.0/](http://mdialog.github.com/api/smoke-0.3.0/)
+Read the API documentation here: [http://mdialog.github.com/api/smoke-0.6.0/](http://mdialog.github.com/api/smoke-0.6.0/)
 
 ## Mailing list
 
