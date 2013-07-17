@@ -5,9 +5,10 @@ import java.net.InetSocketAddress
 import org.jboss.netty.handler.codec.http.HttpRequest
 import org.jboss.netty.handler.codec.http.HttpHeaders
 import org.jboss.netty.util.CharsetUtil
+import java.nio.charset.Charset
 import java.net.URI
 import collection.JavaConversions._
-
+import scala.util.Try
 import smoke.Request
 
 object NettyRequest {
@@ -72,6 +73,15 @@ case class NettyRequest(address: SocketAddress, nettyRequest: HttpRequest)
     else
       Some(nettyRequest.getHeader("Content-Type"))
 
+  val charset = contentType match {
+    case Some(t) ⇒
+      t.split(";").filter(_.contains("charset")).map(_.split("=")).map(x ⇒ (x.last)).toSeq.headOption match {
+        case Some(c) ⇒ Try(Charset.forName(c)).toOption.getOrElse(CharsetUtil.UTF_8)
+        case None    ⇒ CharsetUtil.UTF_8
+      }
+    case None ⇒ CharsetUtil.UTF_8
+  }
+
   val userAgent =
     if (nettyRequest.getHeader("User-Agent") == null)
       None
@@ -84,13 +94,14 @@ case class NettyRequest(address: SocketAddress, nettyRequest: HttpRequest)
     else
       parseParams(u.getRawQuery)
 
-  val formParams = contentType filter (_ == "application/x-www-form-urlencoded") match {
-    case Some(t) ⇒ parseParams(nettyRequest.getContent.toString(CharsetUtil.UTF_8))
-    case None    ⇒ Map.empty[String, String]
+  val formParams = contentType filter (_.toLowerCase.startsWith("application/x-www-form-urlencoded")) match {
+    case Some(t) ⇒
+      parseParams(nettyRequest.getContent.toString(charset))
+    case None ⇒ Map.empty[String, String]
   }
   val params = queryParams ++ formParams
 
-  val body = nettyRequest.getContent.toString(CharsetUtil.UTF_8)
+  val body = nettyRequest.getContent.toString(charset)
   val contentLength = nettyRequest.getContent.readableBytes
 
 }
