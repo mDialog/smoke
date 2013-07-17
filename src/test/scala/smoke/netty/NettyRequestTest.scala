@@ -332,6 +332,16 @@ class NettyRequestTest extends FunSpec {
         "content-type" -> "test/html",
         "user-agent" -> "TestRequest/1.0.0"))
     }
+    it("should return request headers when charset is defined") {
+      val rawRequest = new DefaultHttpRequest(HTTP_1_1, GET, "http://test.host")
+      rawRequest.setHeader("Content-Type", "test/html;charset=UTF-8")
+      rawRequest.setHeader("User-Agent", "TestRequest/1.0.0")
+      val request = NettyRequest(address, rawRequest)
+
+      assert(request.headers === Seq(
+        "content-type" -> "test/html;charset=UTF-8",
+        "user-agent" -> "TestRequest/1.0.0"))
+    }
   }
 
   describe("contentType") {
