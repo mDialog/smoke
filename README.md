@@ -9,7 +9,7 @@ A thin DSL for building simple, fast, scalable, asynchronous HTTP services with 
 
 In your build.sbt
 
-    resolvers += "mDialog snapshots" at "http://mdialog.github.com/snapshots/"
+    resolvers += "mDialog releases" at "http://mdialog.github.com/releases/"
 
     libraryDependencies += "com.mdialog" %% "smoke" % "0.6.0"
 
