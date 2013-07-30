@@ -9,7 +9,7 @@ trait Headers {
       case _                     ⇒ None
     }
 
-  def allHeaderValues(header: String) = headers.filter(h ⇒ h._1 == header) map { case (k, v) ⇒ v }
+  def allHeaderValues(header: String) = headers.filter(h ⇒ h._1.toLowerCase == header.toLowerCase) map { case (k, v) ⇒ v }
 
   def concatenateHeaderValues(header: String) = allHeaderValues(header) match {
     case x if x.isEmpty ⇒ None

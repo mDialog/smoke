@@ -128,16 +128,34 @@ class TestRequestTest extends FunSpec {
           ("user-agent", "SmokeTest/1.0.0")))
       }
 
-      it("should be able to fetch them all") {
-        assert(request.allHeaderValues("x-foo") == Seq("Foo", "Bar"))
+      describe("fetching multiple headers") {
+        it("should be able to fetch them all") {
+          assert(request.allHeaderValues("x-foo") == Seq("Foo", "Bar"))
+        }
+
+        it("should be case-insensitive") {
+          assert(request.allHeaderValues("X-Foo") == Seq("Foo", "Bar"))
+        }
       }
 
-      it("should be able to fetch the last one") {
-        assert(request.lastHeaderValue("x-foo") == Some("Bar"))
+      describe("fetching the last header value") {
+        it("should be able to fetch the last one") {
+          assert(request.lastHeaderValue("x-foo") == Some("Bar"))
+        }
+
+        it("should be case-insensitive") {
+          assert(request.lastHeaderValue("X-Foo") == Some("Bar"))
+        }
       }
 
-      it("should be able to make a concatenated String of all values for a given header") {
-        assert(request.concatenateHeaderValues("x-foo") == Some("Foo,Bar"))
+      describe("collecting multiple header values") {
+        it("should be able to make a concatenated String of all values for a given header") {
+          assert(request.concatenateHeaderValues("x-foo") == Some("Foo,Bar"))
+        }
+
+        it("should be case-insensitive") {
+          assert(request.concatenateHeaderValues("X-Foo") == Some("Foo,Bar"))
+        }
       }
     }
   }
