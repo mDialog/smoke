@@ -11,9 +11,9 @@ In your build.sbt
 
     resolvers += "mDialog releases" at "http://mdialog.github.com/releases/"
 
-    libraryDependencies += "com.mdialog" %% "smoke" % "0.6.0"
+    libraryDependencies += "com.mdialog" %% "smoke" % "0.6.1"
 
-Smoke 0.6.0 is made for use with Scala 2.10 and Akka 2.2. If you're using an older
+Smoke 0.6.1 is made for use with Scala 2.10 and Akka 2.2. If you're using an older
 version of Scala, consider Smoke [0.3.0](https://github.com/mDialog/smoke/tree/5a0038099ff67113234fb8342a7328df6be1e9e4). 
 
 ## Getting started

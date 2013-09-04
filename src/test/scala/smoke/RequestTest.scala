@@ -20,5 +20,24 @@ class RequestTest extends FunSpec {
       assert(Request.isTrusted("172.16.0.1") === true)
       assert(Request.isTrusted("fd5b:982e:9130:247f:0000:0000:0000:0000") === true)
     }
+
+    it("should extract empty params") {
+      var req = new test.TestRequest("http://test.com?lorem=ipsum&empty=&test=test")
+      assert(req.queryParams.get("empty") === Some(""))
+      assert(req.formParams.get("empty") === None)
+      assert(req.params("lorem") === "ipsum")
+      assert(req.params("test") === "test")
+
+      req = new test.TestRequest("http://test.com?empty=&lorem=ipsum")
+      assert(req.queryParams.get("empty") === Some(""))
+      assert(req.formParams.get("empty") === None)
+      assert(req.params("lorem") === "ipsum")
+
+      req = new test.TestRequest("http://test.com?empty=")
+      assert(req.queryParams.get("empty") === Some(""))
+
+      req = new test.TestRequest("http://test.com?=")
+      assert(req.queryParams === Map())
+    }
   }
 }
