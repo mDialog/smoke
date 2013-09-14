@@ -46,7 +46,7 @@ class NettyServer(implicit val config: Config, system: ActorSystem)
         println("\taccepting %s connections on port %d".format(info.protocol, info.port))
       } catch {
         case e: Exception ⇒
-          println("\tERROR - not listening on port " + info.port)
+          println("\tERROR - not listening on port " + info.port + " due to exception: " + e)
           throw e
       }
     }
