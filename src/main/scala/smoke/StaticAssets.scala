@@ -55,6 +55,8 @@ class StaticAssets(publicFolder: String) extends Actor {
           case e: FileNotFoundException ⇒ None
         }
 
+  if (config.getBoolean("smoke.static-assets.cache-assets-preload") && config.getBoolean("smoke.static-assets.cache-assets")) cachedAssets
+
   def receive = {
     case path: String ⇒
       loadAsset(path) match {
