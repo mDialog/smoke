@@ -252,7 +252,7 @@ Unit testing components of your application that interact with Smoke is made eas
 
     case class TestRequest(uriString: String,
                            method: String = "GET",
-                           headers: Map[String, String] = Map.empty,
+                           headers: Seq[(String, String)] = Seq.empty,
                            body: String = "",
                            keepAlive: Boolean = true) extends Request
 
