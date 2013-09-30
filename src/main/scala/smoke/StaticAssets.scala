@@ -31,13 +31,17 @@ class StaticAssets(publicFolder: String) extends Actor {
   }
 
   private def loadAssets(folder: File): Seq[(String, Asset)] =
-    folder.listFiles flatMap {
-      case file if file.isFile ⇒
-        val relativePath = file.getPath.drop(publicFolder.length)
-        val extension = getExtension(file.getName)
-        Seq(relativePath -> Asset(MimeType(extension), readFile(file)))
+    folder.exists match {
+      case true ⇒
+        folder.listFiles flatMap {
+          case file if file.isFile ⇒
+            val relativePath = file.getPath.drop(publicFolder.length)
+            val extension = getExtension(file.getName)
+            Seq(relativePath -> Asset(MimeType(extension), readFile(file)))
 
-      case directory ⇒ loadAssets(directory)
+          case directory ⇒ loadAssets(directory)
+        }
+      case false ⇒ Seq.empty
     }
 
   private lazy val cachedAssets = loadAssets(new File(publicFolder)).toMap
@@ -55,7 +59,8 @@ class StaticAssets(publicFolder: String) extends Actor {
           case e: FileNotFoundException ⇒ None
         }
 
-  if (config.getBoolean("smoke.static-assets.cache-assets-preload") && config.getBoolean("smoke.static-assets.cache-assets")) cachedAssets
+  if (config.getBoolean("smoke.static-assets.cache-assets-preload")
+    && config.getBoolean("smoke.static-assets.cache-assets")) cachedAssets
 
   def receive = {
     case path: String ⇒
