@@ -23,6 +23,8 @@ trait Request extends Headers {
   val formParams: Map[String, String]
   val params: Map[String, String]
 
+  val cookies: Map[String, String]
+
   val body: String
 
   val contentLength: Int

@@ -4,6 +4,7 @@ import java.net.SocketAddress
 import java.net.InetSocketAddress
 import org.jboss.netty.handler.codec.http.HttpRequest
 import org.jboss.netty.handler.codec.http.HttpHeaders
+import org.jboss.netty.handler.codec.http.CookieDecoder
 import org.jboss.netty.util.CharsetUtil
 import java.nio.charset.Charset
 import java.net.URI
@@ -28,6 +29,15 @@ object NettyRequest {
       else None
     } else None
   }
+
+  val cookieDecoder = new CookieDecoder()
+  def extractCookies(request: HttpRequest): Map[String, String] =
+    Option(request.getHeader(HttpHeaders.Names.COOKIE)).map {
+      cookieDecoder.decode(_).map {
+        c ⇒ (c.getName -> c.getValue)
+      }.toMap
+    }.getOrElse(Map())
+
 }
 
 case class NettyRequest(address: SocketAddress, nettyRequest: HttpRequest)
@@ -100,6 +110,8 @@ case class NettyRequest(address: SocketAddress, nettyRequest: HttpRequest)
     case None ⇒ Map.empty[String, String]
   }
   val params = queryParams ++ formParams
+
+  val cookies = NettyRequest.extractCookies(nettyRequest)
 
   val body = nettyRequest.getContent.toString(charset)
   val contentLength = nettyRequest.getContent.readableBytes
