@@ -13,10 +13,11 @@ import smoke.Request
 
 object NettyRequest {
   def extractHost(request: HttpRequest) = {
-    val u = new URI(request.getUri)
-    if (request.containsHeader("host")) request.getHeader("host").split(":").head
-    else if (!Option(u.getHost).isEmpty) u.getHost
-    else null
+    if (request.containsHeader("host")) {
+      request.getHeader("host").split(":").head
+    } else {
+      new URI(request.getUri).getHost
+    }
   }
 
   def extractPort(request: HttpRequest): Option[Int] = {
