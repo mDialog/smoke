@@ -34,6 +34,10 @@ class Method(method: String) {
   def apply(req: Request) = req.method.equalsIgnoreCase(method)
 }
 
+object Cookies {
+  def unapply(req: Request) = Some(req.cookies)
+}
+
 object GET extends Method("GET")
 object POST extends Method("POST")
 object PUT extends Method("PUT")
@@ -44,3 +48,4 @@ object OPTIONS extends Method("OPTIONS")
 object TRACE extends Method("TRACE")
 
 object & { def unapply[A](a: A) = Some(a, a) }
+

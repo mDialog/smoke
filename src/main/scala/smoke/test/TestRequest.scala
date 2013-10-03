@@ -38,5 +38,15 @@ case class TestRequest(uriString: String,
 
   val params: Map[String, String] = queryParams ++ formParams
 
+  val cookies: Map[String, String] =
+    allHeaderValues("Cookie")
+      .mkString(";") // Concatenate everything together in case one "Cookie" value defined several key=value; key=value
+      .split(";")
+      .map(_.split("=").toList)
+      .collect {
+        case List(key, value) ⇒ key -> value
+      }
+      .toMap
+
   val contentLength = body.getBytes.length
 }
