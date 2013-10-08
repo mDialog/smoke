@@ -35,6 +35,36 @@ class ExtractorsTest extends FunSpec {
     }
   }
 
+  describe("Test FileName") {
+    it("should extract a filename and extension") {
+      expectResult(Some(List("foo", "m3u8")))(FileName.unapply("foo.m3u8"))
+    }
+
+    it("should extract filenames with multiple periods") {
+      expectResult(Some(List("foo.bar.baz", "m3u8")))(FileName.unapply("foo.bar.baz.m3u8"))
+    }
+
+    it("should extract filenames with path segments") {
+      expectResult(Some(List("/foo/bar/baz", "m3u8")))(FileName.unapply("/foo/bar/baz.m3u8"))
+    }
+
+    it("should extract a filename with no extension") {
+      expectResult(Some(List("foo")))(FileName.unapply("foo"))
+    }
+
+    it("should extract a filename ending with a period but no extension") {
+      expectResult(Some(List("foo")))(FileName.unapply("foo."))
+    }
+
+    it("should extract an empty filename an extension") {
+      expectResult(Some(List("", "foo")))(FileName.unapply(".foo"))
+    }
+
+    it("should return None for an empty string") {
+      expectResult(None)(FileName.unapply(""))
+    }
+  }
+
   describe("Test Method") {
     it("apply should return whether a request matches that method") {
       val req = new test.TestRequest("http://test.com")
