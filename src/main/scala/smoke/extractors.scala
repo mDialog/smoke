@@ -16,6 +16,17 @@ object Seg {
   def unapply(path: String): Option[List[String]] = Some(path.split("/").toList filter { !_.isEmpty })
 }
 
+object FileName {
+  def unapply(path: String): Option[List[String]] = path.split('.').toList match {
+    case all if (path.contains(".")) ⇒ {
+      if (all.length == 1) Some(all)
+      else Some(List(all.init.mkString("."), all.last))
+    }
+    case all if (path.length > 0) ⇒ Some(List(path))
+    case _                        ⇒ None
+  }
+}
+
 object Params {
   def unapply(req: Request) = Some(req.params)
 }
