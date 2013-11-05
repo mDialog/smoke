@@ -101,15 +101,14 @@ trait Smoke extends DelayedInit {
   }
 
   def main(args: Array[String]) = {
-
-    init(args)
-
-    server.setApplication(application)
-
     try {
+      init(args)
+      server.setApplication(application)
       server.start()
     } catch {
-      case x: Exception ⇒ shutdown()
+      case e: Throwable ⇒
+        shutdownHooks foreach { hook ⇒ hook() }
+        throw e
     }
 
     Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {
