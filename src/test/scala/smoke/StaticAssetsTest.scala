@@ -12,7 +12,7 @@ class StaticAssetsTest extends TestKit(ActorSystem("StaticAssetsTest"))
 
   describe("when asset does not exist") {
     it("should respond with 404") {
-      val actor = system.actorOf(StaticAssets("src/test/resources/public"))
+      val actor = system.actorOf(StaticAssets("public"))
 
       actor ! "/not-a-test-asset.html"
 
@@ -22,7 +22,7 @@ class StaticAssetsTest extends TestKit(ActorSystem("StaticAssetsTest"))
 
   describe("when asset does exist") {
     it("should respond with asset") {
-      val actor = system.actorOf(StaticAssets("src/test/resources/public"))
+      val actor = system.actorOf(StaticAssets("public"))
 
       import java.io.{ File, FileInputStream }
       val file = new File("src/test/resources/public/test-asset.html")
