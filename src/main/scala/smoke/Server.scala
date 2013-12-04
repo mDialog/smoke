@@ -18,20 +18,20 @@ trait Server {
   val config: Config
 
   protected lazy val accessLogger = {
-    val logger = LoggerFactory.getLogger("smoke.Server")
+    val logger = LoggerFactory.getLogger("Server")
       .asInstanceOf[Logger]
 
     logger.setAdditive(false)
     val context = logger.getLoggerContext
 
-    config.getString("smoke.log-type") match {
+    config.getString("log-type") match {
       case "file" ⇒
         val fileEncoder = new PatternLayoutEncoder()
         fileEncoder.setContext(context)
         fileEncoder.setPattern("%message%n")
         fileEncoder.start()
 
-        val logFile = config.getString("smoke.log-file")
+        val logFile = config.getString("log-file")
         val fileAppender = new FileAppender[ILoggingEvent]();
         fileAppender.setContext(context);
         fileAppender.setEncoder(fileEncoder);
@@ -60,20 +60,20 @@ trait Server {
   }
 
   protected lazy val errorLogger = {
-    val logger = LoggerFactory.getLogger("smoke.Server.error")
+    val logger = LoggerFactory.getLogger("Server.error")
       .asInstanceOf[Logger]
 
     logger.setAdditive(false)
     val context = logger.getLoggerContext
 
-    config.getString("smoke.error-log-type") match {
+    config.getString("error-log-type") match {
       case "file" ⇒
         val fileEncoder = new PatternLayoutEncoder()
         fileEncoder.setContext(context)
         fileEncoder.setPattern("%message%n")
         fileEncoder.start()
 
-        val logFile = config.getString("smoke.error-log-file")
+        val logFile = config.getString("error-log-file")
         val fileAppender = new FileAppender[ILoggingEvent]();
         fileAppender.setContext(context);
         fileAppender.setEncoder(fileEncoder);
@@ -112,7 +112,7 @@ trait Server {
     accessLogger.info(entry)
   }
 
-  val errorLogVerbose = config.getBoolean("smoke.error-log-verbose")
+  val errorLogVerbose = config.getBoolean("error-log-verbose")
 
   val errorLog = { (t: Throwable, peerSocketAddress: String, channelId: String) ⇒
     val entry = "[" + logDateFormat.format(new Date()) + "] [" +

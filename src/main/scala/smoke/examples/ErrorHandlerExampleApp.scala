@@ -1,13 +1,21 @@
 package smoke.examples
 
 import smoke._
+import com.typesafe.config.ConfigFactory
 
 class RequestHandlerException extends Exception
 class FutureResultException extends Exception
 class BeforeException extends Exception
 class AfterException extends Exception
 
-object ErrorHandlerExampleApp extends Smoke {
+object ErrorHandlerExampleApp extends App {
+  val smoke = new ErrorHandlerExampleSmoke
+}
+
+class ErrorHandlerExampleSmoke extends Smoke {
+  val config = ConfigFactory.load().getConfig("smoke")
+  val executionContext = scala.concurrent.ExecutionContext.global
+
   before {
     case GET(Path("/before-exception")) ⇒
       throw new BeforeException

@@ -10,9 +10,8 @@ import smoke.test._
 
 class ErrorHandlerExampleAppTest extends FunSpec with BeforeAndAfterAll {
 
-  val app = ErrorHandlerExampleApp
+  val app = new ErrorHandlerExampleSmoke
 
-  override def beforeAll { app.init() }
   override def afterAll { app.shutdown() }
 
   describe("GET /before-exception") {

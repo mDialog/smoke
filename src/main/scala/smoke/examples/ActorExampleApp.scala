@@ -4,6 +4,8 @@ import smoke._
 
 import akka.actor._
 import akka.pattern.ask
+import akka.util.Timeout
+import com.typesafe.config.ConfigFactory
 
 class Responder extends Actor {
   def receive = {
@@ -14,8 +16,13 @@ class Responder extends Actor {
   }
 }
 
-object ActorExampleApp extends Smoke {
+object ActorExampleApp extends SmokeApp {
+  val config = ConfigFactory.load().getConfig("smoke")
+  val system = ActorSystem("ActorExampleApp", config)
+  val executionContext = system.dispatcher
   val actor = system.actorOf(Props[Responder])
+
+  implicit val timeout = Timeout(10000)
 
   onRequest(actor ? _ mapTo manifest[Response])
 

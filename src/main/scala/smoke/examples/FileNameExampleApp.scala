@@ -1,9 +1,12 @@
 package smoke.examples
 
 import smoke._
+import com.typesafe.config.ConfigFactory
 
-object FileNameExampleApp extends Smoke {
+object FileNameExampleApp extends SmokeApp {
+  val config = ConfigFactory.load().getConfig("smoke")
 
+  val executionContext = scala.concurrent.ExecutionContext.global
   onRequest {
     case GET(Path(Seg("products" :: productId :: FileName("orders" :: extension :: Nil) :: Nil))) ⇒ reply {
       val responseText = extension match {

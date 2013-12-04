@@ -1,22 +1,13 @@
 package smoke
 
-import akka.actor.{ Actor, Props }
-import akka.util.ByteString
 import java.io.{ File, FileInputStream, FileNotFoundException }
 
-case class Asset(contentType: String, data: ByteString)
+case class Asset(contentType: String, data: Array[Byte])
 
-object StaticAssets {
-  def apply(publicFolder: String) = Props(classOf[StaticAssets], publicFolder)
-}
-
-class StaticAssets(publicFolderPath: String) extends Actor {
-  val publicFolder = Option(this.getClass.getClassLoader.getResource(publicFolderPath)) match {
-    case Some(url) ⇒ url.toString.split("file:").last
-    case _         ⇒ throw new Exception("Error: static assets folder not accessible")
-  }
-
-  val config = context.system.settings.config
+trait StaticAssets {
+  val publicFolder: String
+  val cacheAssets: Boolean = false
+  val cacheAssetsPreload: Boolean = false
 
   private def getExtension(name: String) = {
     val dotIndex = name.lastIndexOf('.')
@@ -31,7 +22,12 @@ class StaticAssets(publicFolderPath: String) extends Actor {
     in.read(bytes)
     in.close()
 
-    ByteString(bytes)
+    bytes
+  }
+
+  private lazy val assetFolder = Option(this.getClass.getClassLoader.getResource(publicFolder)) match {
+    case Some(url) ⇒ url.toString.split("file:").last
+    case _         ⇒ throw new Exception("Error: static assets folder is not accessible")
   }
 
   private def loadAssets(folder: File): Seq[(String, Asset)] =
@@ -39,7 +35,7 @@ class StaticAssets(publicFolderPath: String) extends Actor {
       case true ⇒
         folder.listFiles flatMap {
           case file if file.isFile ⇒
-            val relativePath = file.getPath.drop(publicFolder.length)
+            val relativePath = file.getPath.drop(assetFolder.length)
             val extension = getExtension(file.getName)
             Seq(relativePath -> Asset(MimeType(extension), readFile(file)))
 
@@ -48,32 +44,29 @@ class StaticAssets(publicFolderPath: String) extends Actor {
       case false ⇒ Seq.empty
     }
 
-  private lazy val cachedAssets = loadAssets(new File(publicFolder)).toMap
+  private lazy val cachedAssets = loadAssets(new File(assetFolder)).toMap
 
-  val loadAsset: String ⇒ Option[Asset] =
-    if (config.getBoolean("smoke.static-assets.cache-assets"))
+  private val loadAsset: String ⇒ Option[Asset] =
+    if (cacheAssets)
       (path: String) ⇒ cachedAssets.get(path)
     else
       (path: String) ⇒
         try {
-          val file = new File(s"$publicFolder$path")
+          val file = new File(s"$assetFolder$path")
           val extension = getExtension(file.getName)
           Some(Asset(MimeType(extension), readFile(file)))
         } catch {
           case e: FileNotFoundException ⇒ None
         }
 
-  if (config.getBoolean("smoke.static-assets.cache-assets-preload")
-    && config.getBoolean("smoke.static-assets.cache-assets")) cachedAssets
+  if (cacheAssetsPreload && cacheAssets) cachedAssets
 
-  def receive = {
-    case path: String ⇒
-      loadAsset(path) match {
-        case Some(asset) ⇒
-          val data = RawData(asset.data.toArray)
-          sender ! Response(Ok, Seq("Content-Type" -> asset.contentType), data)
-
-        case None ⇒ sender ! Response(NotFound)
-      }
+  def responseFromAsset(path: String): Response = {
+    loadAsset(path) match {
+      case Some(asset) ⇒
+        Response(Ok, Seq("Content-Type" -> asset.contentType), RawData(asset.data))
+      case None ⇒
+        Response(NotFound)
+    }
   }
 }

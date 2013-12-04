@@ -1,7 +1,7 @@
 Smoke
 ======
 
-*Simple, asynchronous HTTP powered by [Akka](http://akka.io)*
+*Simple, asynchronous HTTP using Scala Future*
 
 A thin DSL for building simple, fast, scalable, asynchronous HTTP services with Scala.
 
@@ -11,18 +11,49 @@ In your build.sbt
 
     resolvers += "mDialog releases" at "http://mdialog.github.com/releases/"
 
-    libraryDependencies += "com.mdialog" %% "smoke" % "1.0.0"
+    libraryDependencies += "com.mdialog" %% "smoke" % "1.1.0"
 
-Smoke 1.0.0 is made for use with Scala 2.10 and Akka 2.2. If you're using an older
+Smoke 1.1.0 is made for use with Scala 2.10. If you're using an older
 version of Scala, consider Smoke [0.3.0](https://github.com/mDialog/smoke/tree/5a0038099ff67113234fb8342a7328df6be1e9e4). 
 
 ## Getting started
 
-Build a simple application
+Smoke provides two ways to create a simple application
 
-    import smoke._
+### Using Smoke trait
 
-    object BasicExampleApp extends Smoke {
+
+	import smoke._
+	import com.typesafe.config.ConfigFactory
+
+	object BasicExampleApp extends App {
+  		val smoke = new BasicExampleSmoke
+	}
+
+	class BasicExampleSmoke extends Smoke {
+  		val config = ConfigFactory.load().getConfig("smoke")
+  		val executionContext = scala.concurrent.ExecutionContext.global
+
+  		onRequest {
+    		case GET(Path("/example")) ⇒ reply {
+      			Thread.sleep(1000)
+      			Response(Ok, body = "It took me a second to build this response.\n")
+    		}
+    		case _ ⇒ reply(Response(NotFound))
+  		}
+	}
+	
+By instanciating a class that extends Smoke, you create a smoke instance that will listen on specific port(s) and process requests based on your handler function definition.
+	
+### Using SmokeApp trait
+
+	import smoke._
+	import com.typesafe.config.ConfigFactory
+
+    object BasicExampleApp extends SmokeApp {
+  	  val config = ConfigFactory.load().getConfig("smoke")
+  	  val executionContext = scala.concurrent.ExecutionContext.global
+      
       onRequest {
         case GET(Path("/example")) => reply {
           Thread.sleep(1000)
@@ -32,22 +63,13 @@ Build a simple application
       }
     }
 
+SmokeApp lets you make smoke the entry point of your app. It extends Smoke trait and will provided the same feature, making sure smoke is listenning for http request when the Scala App is started.
+
 Run it with sbt
 
     sbt run
 
-Smoke provides a DSL for building HTTP services using a simple request/response pattern, where each response is provided in a `scala.concurrent.Future`. Akka provides a powerful toolkit to control the creation and execution of Futures; spend some time with that project's [excellent documentation](http://akka.io/docs) to get a feel for how it works.
-
-With the Smoke trait, you get access to the tools necessary to build a robust Akka-based application. That includes to an `ActorSystem`, `Dispatcher`, default timeout and `Config` object.
-
-    trait Smoke {
-      final implicit val config = configure()
-      final implicit val system = ActorSystem("Smoke", config)
-      final implicit val dispatcher = system.dispatcher
-      final implicit val timeout = Timeout(timeoutDuration milliseconds)
-      ...
-    }
-
+Smoke provides a DSL for building HTTP services using a simple request/response pattern, where each response is provided in a `scala.concurrent.Future`.
 
 Be sure to check out the  [examples](https://github.com/mDialog/smoke/tree/master/src/main/scala/smoke/examples).
 
@@ -96,33 +118,7 @@ Since a reply is just a Future[Response], you can also get one from an actor.
       onRequest (actor ? _ mapTo manifest[Response])
     }
 
-Even better, you can use the tools provided by Akka to compose your responder function using many Futures:
-
-    class DataSource extends Actor {
-      def receive = {
-        case _ => sender ! "Some data"
-      }
-    }
-
-    class ResponseBuilder extends Actor {
-      def receive = {
-        case s: String => sender ! ("Found: " + s)
-      }
-    }
-
-    object ChainedActorExampleApp extends Smoke {
-      val dataSource = system.actorOf(Props[DataSource])
-      val builder = system.actorOf(Props[ResponseBuilder])
-
-      onRequest { request =>
-        for {
-          data <- dataSource ? request
-          response <- builder ? data mapTo manifest[String]
-        } yield Response(Ok, body = response)
-      }
-    }
-
-To get a feel for the power of Scala's composable futures, [read the documentation](http://doc.akka.io/docs/akka/snapshot/scala/futures.html).
+To get a feel for the power of Scala's composable futures, [read the documentation](http://docs.scala-lang.org/overviews/core/futures.html).
 
 ### Responses
 
@@ -153,14 +149,12 @@ If your `Future[Response]` contains an exception, you can catch it and return an
 
 This is especially useful when using a responder function composed from several Futures.
 
-## Basically,
+## Smoke workflow
+Combining all those handlers, smoke processes requests that way :
 
-    def application = before andThen onRequest andThen { f =>
-      f recover(onError) map after
-    }
-
-*(paraphrased)*
-
+    def application = withErrorHandling {
+    		beforeFilter andThen responder andThen { _ map afterFilter }
+  		}
 ## Graceful shutdown
 
 Smoke will shutdown the server and `ActorSystem` when the process receives a `TERM` signal, from Ctrl-C or `kill <pid>` for instance. You can attach shutdown hooks both before and after this shutdown occurs.
@@ -179,38 +173,43 @@ Smoke supports SSL, including optional use of client certificates. See the confi
 
 ## Configuration
 
-There are a few of configuration options. Like Akka, Smoke uses [Typesafe Config Library](https://github.com/typesafehub/config). You can override any of the default configuration options by adding an `application.conf` file to your project.
+There are a few of configuration options. Smoke uses [Typesafe Config Library](https://github.com/typesafehub/config). You can override any of the default configuration options by adding an `application.conf` file to your project.
 
     smoke {
-      timeout = 2s
-
       log-type = "stdout" # alternatively, set to "file"
-      log-file = "access.log" # if log-type is "file"
+      log-file = "access.log" # used if log-type set to "file"
 
       error-log-type = "stdout" # alternatively, set to "file"
       error-log-file = "error.log" # used if log-type set to "file"
       error-log-verbose = false
 
       http {
-        #Multiple ports may be used by specifying more than one port in this list
-        ports = [7771]
+        ##The default http port
+        port = 7771
+
+        #Multiple ports may be used by specifying a list, overriding the port setting
+        #(Set empty to disable http)
+        ports = [${smoke.http.port}]
+      }
+
+      session{
+        secret=0sfi034nrosd23kaldasl
       }
 
       https {
 
-        #Multiple ports may be used by specifying a list, overriding the port setting
-        #(Set empty to disable http)
+        #The ports on which run as https (leave empty to disable https)
         ports = []
 
         # Server Authentication
 
         # The location of the jks format key store to be used
         # If not provided, the system property javax.net.ssl.keyStore is used
-        ##key-store = "test.jks"
+        key-store = "src/test/resources/ssl/test.jks"
 
         # The password for the key store.
         # If not provided, the system property javax.net.ssl.keyStorePassword is used
-        ##key-store-password = "test-password"
+        key-store-password = "test-password"
 
         # Client Authentication
 
@@ -219,19 +218,27 @@ There are a few of configuration options. Like Akka, Smoke uses [Typesafe Config
 
         # The location of the jks format trust store to be used
         # If not provided, the system property javax.net.ssl.trustStore is used
-        ##trust-store = "test.jks"
+        trust-store = "src/test/resources/ssl/test.jks"
 
         # The password for the trust store.
         # If not provided, the system property javax.net.ssl.trustStorePassword is used
-        ##trust-store-password = "test-password"
+        trust-store-password = "test-password"
+
+        # Debug ssl, as per the javax.net.debug system property
+        ## debug = "all"
+      }
+
+      static-assets {
+        cache-assets = true
+        cache-assets-preload = false
+        
+        public-dir = "public"
       }
     }
 
-For more control over how the the config object is constructed, you
-may override the Smoke configure() method. For example, to include
-extra config from a properties file, you would do the following:
+Smoke requires a Config object to be configured. Extra config from a properties file can be loaded as follow:
 
-    override def configure() = {
+    val config = {
       ConfigFactory.parseResources("configuration.properties")
         .withFallback(ConfigFactory.load())
     }
@@ -257,9 +264,9 @@ Unit testing components of your application that interact with Smoke is made eas
                            keepAlive: Boolean = true) extends Request
 
 
-Using this class along with the tools provided by Akka allows testing of your application's responder function.
+Using this class allows testing of your application's responder function.
 
-You can test an app by initializing and shutting it down inside a test suite. Invoke the application method directly, passing it a TestRequest.
+You can test a smoke instance by instanciating it and shutting it down inside a test suite. Invoke the application method directly, passing it a TestRequest.
 
     import org.scalatest.{ FunSpec, BeforeAndAfterAll }
 
@@ -270,20 +277,19 @@ You can test an app by initializing and shutting it down inside a test suite. In
     import smoke.test._
 
     class BasicExampleAppTest extends FunSpec with BeforeAndAfterAll {
-  
-      val app = BasicExampleApp
-  
-      override def beforeAll { app.init() }
-      override def afterAll { app.shutdown() }  
-  
-      describe("GET /example") {    
+
+      val app = new BasicExampleSmoke
+
+      override def afterAll { app.shutdown() }
+
+      describe("GET /example") {
         it("should respond with 200") {
           val request = TestRequest("/example")
           val response = Await.result(app.application(request), 2 seconds)
           assert(response.status === Ok)
         }
       }
-  
+
       describe("POST /unknown-path") {
         it("should respond with 404") {
           val request = TestRequest("/unknown-path", "POST")
@@ -297,7 +303,7 @@ This is the same way Smoke processes requests while your app is running.
 
 ## Documentation
 
-Read the API documentation here: [http://mdialog.github.com/api/smoke-1.0.0/](http://mdialog.github.com/api/smoke-1.0.0/)
+Read the API documentation here: [http://mdialog.github.com/api/smoke-1.1.0/](http://mdialog.github.com/api/smoke-1.1.0/)
 
 ## Mailing list
 

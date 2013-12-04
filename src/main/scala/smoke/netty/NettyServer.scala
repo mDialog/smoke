@@ -1,8 +1,9 @@
 package smoke.netty
 
 import com.typesafe.config.Config
-import akka.actor._
-import scala.concurrent.Future
+import scala.concurrent.{ Future, ExecutionContext }
+
+import grizzled.slf4j.Logging
 
 import java.net.InetSocketAddress
 import org.jboss.netty.bootstrap.ServerBootstrap
@@ -18,18 +19,21 @@ import collection.JavaConversions._
 
 class NoPortsException extends Exception("No ports configured to bind to.")
 
-class NettyServer(implicit val config: Config, system: ActorSystem)
+class NettyServer(implicit val config: Config, ec: ExecutionContext)
     extends Server
+    with Logging
     with ConfigHelpers {
 
   val channelFactory = new NioServerSocketChannelFactory()
   val handler = new NettyServerHandler(log, errorLog)
 
+  implicit val dispatcher = ec
+
   case class BindInfo(bootstrap: ServerBootstrap, port: Int, protocol: String)
 
   val connectList: Seq[BindInfo] =
-    bootstrap(config.getScalaIntList("smoke.http.ports"), ssl = false) ++
-      bootstrap(config.getScalaIntList("smoke.https.ports"), ssl = true)
+    bootstrap(config.getScalaIntList("http.ports"), ssl = false) ++
+      bootstrap(config.getScalaIntList("https.ports"), ssl = true)
 
   var allChannels: ChannelGroup = new DefaultChannelGroup()
 
@@ -38,32 +42,32 @@ class NettyServer(implicit val config: Config, system: ActorSystem)
   }
 
   def start() {
-    println("Starting Netty:")
+    logger.info("Starting Netty")
     connectList foreach { info ⇒
       try {
         val channel = info.bootstrap.bind(new InetSocketAddress(info.port))
         allChannels.add(channel)
-        println("\taccepting %s connections on port %d".format(info.protocol, info.port))
+        logger.info("Accepting %s connections on port %d".format(info.protocol, info.port))
       } catch {
         case e: Exception ⇒
-          println("\tERROR - not listening on port " + info.port + " due to exception: " + e)
+          logger.error("Not listening on port " + info.port + " due to exception: " + e)
           throw e
       }
     }
 
     if (allChannels.isEmpty) {
-      println("\tERROR - no ports configured to bind to")
+      logger.error("No ports configured to bind to")
       throw new NoPortsException
     }
   }
 
   def stop() {
-    println("Stopping Netty:")
+    logger.info("Stopping Netty")
     allChannels.iterator map { channel ⇒
       channel.close.awaitUninterruptibly()
-      println("\tchannel " + channel)
+      logger.info("channel " + channel)
     }
-    println("Netty no longer accepting HTTP connections")
+    logger.info("Netty no longer accepting HTTP connections")
     channelFactory.releaseExternalResources()
   }
 
@@ -102,11 +106,9 @@ class NettyServer(implicit val config: Config, system: ActorSystem)
 
 class NettyServerHandler(
     log: (Request, Response) ⇒ Unit,
-    errorLog: (Throwable, String, String) ⇒ Unit)(implicit system: ActorSystem) extends SimpleChannelUpstreamHandler {
+    errorLog: (Throwable, String, String) ⇒ Unit)(implicit ec: ExecutionContext) extends SimpleChannelUpstreamHandler {
   import HttpHeaders.Names._
   import HttpHeaders.Values._
-
-  implicit val dispatcher = system.dispatcher
 
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
     val address = e.getRemoteAddress

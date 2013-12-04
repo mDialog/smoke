@@ -10,9 +10,8 @@ import smoke.test._
 
 class BasicExampleAppTest extends FunSpec with BeforeAndAfterAll {
 
-  val app = BasicExampleApp
+  val app = new BasicExampleSmoke
 
-  override def beforeAll { app.init() }
   override def afterAll { app.shutdown() }
 
   describe("GET /example") {

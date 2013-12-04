@@ -10,9 +10,8 @@ import smoke.test._
 
 class FileServerAppTest extends FunSpec with BeforeAndAfterAll {
 
-  val app = FileServerApp
+  val app = new FileServerSmoke()
 
-  override def beforeAll { app.init() }
   override def afterAll { app.shutdown() }
 
   describe("GET /plant.jpg") {
