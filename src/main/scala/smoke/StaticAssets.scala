@@ -10,7 +10,11 @@ object StaticAssets {
   def apply(publicFolder: String) = Props(classOf[StaticAssets], publicFolder)
 }
 
-class StaticAssets(publicFolder: String) extends Actor {
+class StaticAssets(publicFolderPath: String) extends Actor {
+  val publicFolder = Option(this.getClass.getClassLoader.getResource(publicFolderPath)) match {
+    case Some(url) ⇒ url.toString.split("file:").last
+    case _         ⇒ throw new Exception("Error: static assets folder not accessible")
+  }
 
   val config = context.system.settings.config
 
