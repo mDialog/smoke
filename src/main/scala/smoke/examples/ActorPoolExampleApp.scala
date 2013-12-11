@@ -5,6 +5,8 @@ import smoke._
 import akka.actor._
 import akka.routing.RoundRobinRouter
 import akka.pattern.ask
+import akka.util.Timeout
+import com.typesafe.config.ConfigFactory
 
 object NotFoundException extends Exception("Not found")
 
@@ -17,8 +19,12 @@ class PooledResponder extends Actor {
   }
 }
 
-object ActorPoolExampleApp extends Smoke {
+object ActorPoolExampleApp extends SmokeApp {
+  val config = ConfigFactory.load().getConfig("smoke")
+  val system = ActorSystem("ActorPoolExampleApp", config)
+  val executionContext = system.dispatcher
   val pool = system.actorOf(Props[PooledResponder].withRouter(RoundRobinRouter(200)))
+  implicit val timeout = Timeout(10000)
 
   onRequest(pool ? _ mapTo manifest[Response])
 

@@ -1,30 +1,22 @@
 package smoke
 
-import scala.compat.Platform.currentTime
-import com.typesafe.config.ConfigFactory
-
+import com.typesafe.config._
 import scala.concurrent.{ Future, ExecutionContext }
-import scala.concurrent.duration._
-import akka.actor.ActorSystem
-import akka.util.Timeout
-
 import smoke.netty.NettyServer
 
+trait SmokeApp extends App with Smoke {
+  override def delayedInit(body: ⇒ Unit) = {
+    super[App].delayedInit(super[Smoke].delayedInit(body))
+  }
+}
+
 trait Smoke extends DelayedInit {
+  val config: Config
+  implicit val executionContext: ExecutionContext
 
-  def configure() = { ConfigFactory.load() }
+  private lazy val server = new NettyServer()(config, executionContext)
 
-  final implicit val config = configure()
-
-  final implicit val system: ActorSystem = ActorSystem("Smoke", config)
-  final implicit val dispatcher: ExecutionContext = system.dispatcher
-
-  private val timeoutDuration: Long = config.getMilliseconds("smoke.timeout")
-  final implicit val timeout = Timeout(timeoutDuration milliseconds)
-
-  def setServer() = { new NettyServer }
-
-  private val server = setServer()
+  private var running = false
 
   private var beforeFilter = { request: Request ⇒ request }
   private var responder = { request: Request ⇒
@@ -38,7 +30,6 @@ trait Smoke extends DelayedInit {
 
   private var shutdownHooks = List(() ⇒ {
     server.stop()
-    system.shutdown()
   })
 
   private def withErrorHandling[T](errorProne: T ⇒ Future[Response]) = {
@@ -76,23 +67,6 @@ trait Smoke extends DelayedInit {
 
   def fail(e: Exception) = Future.failed(e)
 
-  val executionStart: Long = currentTime
-  var running = false
-
-  protected def args: Array[String] = _args
-  private var _args: Array[String] = _
-
-  private var initCode: () ⇒ Unit = _
-  override def delayedInit(body: ⇒ Unit) { initCode = (() ⇒ body) }
-
-  def init(args: Array[String] = Seq.empty.toArray) {
-    if (!running) {
-      _args = args
-      initCode()
-      running = true
-    }
-  }
-
   def shutdown() {
     if (running) {
       running = false
@@ -100,19 +74,24 @@ trait Smoke extends DelayedInit {
     }
   }
 
-  def main(args: Array[String]) = {
+  private[smoke] def init() {
     try {
-      init(args)
       server.setApplication(application)
       server.start()
+      running = true
     } catch {
       case e: Throwable ⇒
         shutdownHooks foreach { hook ⇒ hook() }
         throw e
     }
-
-    Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {
-      def run = shutdown()
-    }))
   }
+
+  def delayedInit(body: ⇒ Unit) = {
+    body
+    init()
+  }
+
+  Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {
+    def run = shutdown()
+  }))
 }

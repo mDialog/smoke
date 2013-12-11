@@ -1,44 +1,38 @@
 package smoke.examples
 
 import smoke._
-import akka.actor._
-import akka.pattern.ask
+import com.typesafe.config.ConfigFactory
+import scala.concurrent.ExecutionContext
 
-class SessionResponder extends Actor {
-  val system = context.system
+object SessionExampleApp extends SmokeApp {
+  val executionContext = scala.concurrent.ExecutionContext.global
+  val config = ConfigFactory.load().getConfig("smoke")
+
+  val sessionManager = new SessionManager(config.getString("session.secret"))
+  import sessionManager._
 
   def prettyHistory(history: String) =
     history.split(",")
       .mkString("Visit history:\n", "\n", "")
 
-  def receive = {
+  onRequest {
     case r @ GET(Path("/get-access")) ⇒
       val cookies = Session(Map("has-access" -> "1"))
-      sender ! Response(Ok, body = "<a href='/secured'>Access</a>", headers = cookies)
+      reply(Response(Ok, body = "<a href='/secured'>Access</a>", headers = cookies))
 
     case r @ GET(Path("/secured")) & Session(session) if session.get("has-access") == Some("1") ⇒
       val history = session.get("history").getOrElse("") + System.currentTimeMillis + ","
       val cookies = Session(session + ("history" -> history))
-      sender ! Response(Ok, body = prettyHistory(history), headers = cookies)
+      reply(Response(Ok, body = prettyHistory(history), headers = cookies))
 
     case r @ GET(Path("/secured")) ⇒
-      sender ! Response(Unauthorized, body = "unauthorized")
+      reply(Response(Unauthorized, body = "unauthorized"))
 
     case r @ GET(Path("/remove-access")) & Session(session) ⇒
-      sender ! Response(Ok, headers = Session.destroy(session))
+      reply(Response(Ok, headers = Session.destroy(session)))
 
     case _ ⇒
-      sender ! Response(NotFound)
-  }
-}
-
-object SessionExampleApp extends Smoke {
-
-  val responder = system.actorOf(Props[SessionResponder], "responder")
-
-  onRequest {
-    case r: Request ⇒
-      responder ? r mapTo manifest[Response]
+      reply(Response(NotFound))
   }
 
   after { response ⇒

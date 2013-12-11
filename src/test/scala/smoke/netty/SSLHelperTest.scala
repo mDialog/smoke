@@ -9,7 +9,7 @@ class SSLHelperTest extends FunSpec {
 
     it("should throw an exception if the key store password is wrong") {
       val config = ConfigFactory.parseString(
-        """smoke.https {
+        """https {
              enabled = true
              key-store = "src/test/resources/ssl/test.jks"
              key-store-password = "wrong-password"
@@ -22,7 +22,7 @@ class SSLHelperTest extends FunSpec {
 
       it("should throw an exception if the trust store does not exist") {
         val config = ConfigFactory.parseString(
-          """smoke.https {
+          """https {
                enabled = true
                key-store = "src/test/resources/ssl/test.jks"
                key-store-password = "test-password"
@@ -37,7 +37,7 @@ class SSLHelperTest extends FunSpec {
 
       it("should throw an exception if the trust store password is wrong") {
         val config = ConfigFactory.parseString(
-          """smoke.https {
+          """https {
                enabled = true
                key-store = "src/test/resources/ssl/test.jks"
                key-store-password = "test-password"
@@ -56,7 +56,7 @@ class SSLHelperTest extends FunSpec {
 
     it("should be in server mode") {
       val config = ConfigFactory.parseString(
-        """smoke.https {
+        """https {
                enabled = true
                key-store = "src/test/resources/ssl/test.jks"
                key-store-password = "test-password"
@@ -73,7 +73,7 @@ class SSLHelperTest extends FunSpec {
 
     it("should require client auth if configured") {
       val config = ConfigFactory.parseString(
-        """smoke.https {
+        """https {
                enabled = true
                key-store = "src/test/resources/ssl/test.jks"
                key-store-password = "test-password"
@@ -90,7 +90,7 @@ class SSLHelperTest extends FunSpec {
 
     it("should not require client auth if not configured") {
       val config = ConfigFactory.parseString(
-        """smoke.https {
+        """https {
                enabled = true
                key-store = "src/test/resources/ssl/test.jks"
                key-store-password = "test-password"

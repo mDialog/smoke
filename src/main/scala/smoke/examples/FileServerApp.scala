@@ -1,8 +1,16 @@
 package smoke.examples
 
 import smoke._
+import com.typesafe.config.ConfigFactory
 
-object FileServerApp extends Smoke {
+object FileServerApp extends App {
+  val smoke = new FileServerSmoke()
+}
+
+class FileServerSmoke extends Smoke {
+  val config = ConfigFactory.load().getConfig("smoke")
+  val executionContext = scala.concurrent.ExecutionContext.global
+
   onRequest {
     case GET(Path(path) & Path(FileExtension(extension))) ⇒ reply {
       //serve files in the src/test/resources folder

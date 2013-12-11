@@ -9,7 +9,7 @@ import java.io.FileInputStream
 object SSLHelper extends ConfigHelpers {
   def apply(config: Config) = {
 
-    config.getStringOption("smoke.https.debug") foreach { debugOpts ⇒
+    config.getStringOption("https.debug") foreach { debugOpts ⇒
       System.setProperty("javax.net.debug", debugOpts)
     }
 
@@ -21,10 +21,10 @@ object SSLHelper extends ConfigHelpers {
     /* If no key store is specified, SSLContext will use the system properties
        javax.net.ssl.keyStore and javax.net.ssl.keyStorePassword.
     */
-    val keyManagers = config.getStringOption("smoke.https.key-store") match {
+    val keyManagers = config.getStringOption("https.key-store") match {
       case None ⇒ null
       case Some(keyStorePath) ⇒
-        val keyStorePw = config.getString("smoke.https.key-store-password")
+        val keyStorePw = config.getString("https.key-store-password")
         val ks = makeKeyStore(keyStorePath, keyStorePw)
 
         val kmf =
@@ -40,11 +40,11 @@ object SSLHelper extends ConfigHelpers {
      -<java-home>/lib/security/jssecacerts
      -<java-home>/lib/security/cacerts
     */
-    val trustManagers = config.getStringOption("smoke.https.trust-store") match {
+    val trustManagers = config.getStringOption("https.trust-store") match {
       case None ⇒ null
       case Some(trustStorePath) ⇒
         val trustStorePw =
-          config.getStringOption("smoke.https.trust-store-password").getOrElse("")
+          config.getStringOption("https.trust-store-password").getOrElse("")
         val ks = makeKeyStore(trustStorePath, trustStorePw)
 
         val tmf =
@@ -78,7 +78,7 @@ class SSLHelper(val config: Config, val sslContext: SSLContext) extends ConfigHe
     val engine = sslContext.createSSLEngine
     engine.setUseClientMode(false)
 
-    config.getBooleanOption("smoke.https.use-client-auth") match {
+    config.getBooleanOption("https.use-client-auth") match {
       case Some(true) ⇒ engine.setNeedClientAuth(true)
       case _          ⇒
     }
