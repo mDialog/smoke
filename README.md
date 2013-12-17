@@ -18,10 +18,7 @@ version of Scala, consider Smoke [0.3.0](https://github.com/mDialog/smoke/tree/5
 
 ## Getting started
 
-Smoke provides two ways to create a simple application
-
-### Using Smoke trait
-
+Smoke provides a DSL for building HTTP services using a simple request/response pattern, where each response is provided in a `scala.concurrent.Future`.
 
 	import smoke._
 	import com.typesafe.config.ConfigFactory
@@ -42,36 +39,10 @@ Smoke provides two ways to create a simple application
     		case _ ⇒ reply(Response(NotFound))
   		}
 	}
-	
-By instanciating a class that extends Smoke, you create a smoke instance that will listen on specific port(s) and process requests based on your handler function definition.
-	
-### Using SmokeApp trait
 
-	import smoke._
-	import com.typesafe.config.ConfigFactory
-
-    object BasicExampleApp extends SmokeApp {
-  	  val config = ConfigFactory.load().getConfig("smoke")
-  	  val executionContext = scala.concurrent.ExecutionContext.global
-      
-      onRequest {
-        case GET(Path("/example")) => reply {
-          Thread.sleep(1000)
-          Response(Ok, body="It took me a second to build this response.\n")
-        }
-        case _ => reply(Response(NotFound))
-      }
-    }
-
-SmokeApp lets you make smoke the entry point of your app. It extends Smoke trait and will provided the same feature, making sure smoke is listenning for http request when the Scala App is started.
-
-Run it with sbt
+Be sure to check out the  [examples](https://github.com/mDialog/smoke/tree/master/src/main/scala/smoke/examples). Run them with sbt
 
     sbt run
-
-Smoke provides a DSL for building HTTP services using a simple request/response pattern, where each response is provided in a `scala.concurrent.Future`.
-
-Be sure to check out the  [examples](https://github.com/mDialog/smoke/tree/master/src/main/scala/smoke/examples).
 
 ## The Responder
 
@@ -101,7 +72,7 @@ If your request can be responded to quickly and immediately, you can pass a `Res
 
     case _ => reply(Response(NotFound))
 
-Since a reply is just a Future[Response], you can also get one from an actor.
+Since a reply is just a `Future[Response]`, you can also get one from an [Akka](http://akka.io) actor.
 
     class Responder extends Actor {
       def receive = {
@@ -171,9 +142,29 @@ Smoke will shutdown the server and `ActorSystem` when the process receives a `TE
 
 Smoke supports SSL, including optional use of client certificates. See the configuration section for more information.
 
+### Using SmokeApp
+
+Alternatively, extending `SmokeApp` creates a stand-alone application built around a Smoke HTTP server.
+
+	import smoke._
+	import com.typesafe.config.ConfigFactory
+
+    object BasicExampleApp extends SmokeApp {
+  	  val config = ConfigFactory.load().getConfig("smoke")
+  	  val executionContext = scala.concurrent.ExecutionContext.global
+      
+      onRequest {
+        case GET(Path("/example")) => reply {
+          Thread.sleep(1000)
+          Response(Ok, body="It took me a second to build this response.\n")
+        }
+        case _ => reply(Response(NotFound))
+      }
+    }
+
 ## Configuration
 
-There are a few of configuration options. Smoke uses [Typesafe Config Library](https://github.com/typesafehub/config). You can override any of the default configuration options by adding an `application.conf` file to your project.
+Smoke uses [Typesafe Config Library](https://github.com/typesafehub/config). You can override any of the default configuration options using the `com.typesafe.Config` provided when creating your Smoke object.
 
     smoke {
       log-type = "stdout" # alternatively, set to "file"
@@ -234,13 +225,6 @@ There are a few of configuration options. Smoke uses [Typesafe Config Library](h
         
         public-dir = "public"
       }
-    }
-
-Smoke requires a Config object to be configured. Extra config from a properties file can be loaded as follow:
-
-    val config = {
-      ConfigFactory.parseResources("configuration.properties")
-        .withFallback(ConfigFactory.load())
     }
 
 ## Try it out
