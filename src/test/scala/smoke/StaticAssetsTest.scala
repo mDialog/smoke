@@ -1,8 +1,6 @@
 package smoke
 
 import org.scalatest.FunSpec
-import akka.testkit.{ TestKit, ImplicitSender }
-import akka.actor.ActorSystem
 import scala.concurrent.duration.Duration
 
 import smoke.test._

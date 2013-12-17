@@ -12,7 +12,7 @@ class FileServerSmoke extends Smoke {
   val executionContext = scala.concurrent.ExecutionContext.global
 
   onRequest {
-    case GET(Path(path) & Path(FileExtension(extension))) ⇒ reply {
+    case GET(Path(path) & FileExtension(extension)) ⇒ reply {
       //serve files in the src/test/resources folder
       val fullPath = "src/test/resources" + path
 

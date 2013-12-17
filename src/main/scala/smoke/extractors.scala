@@ -13,29 +13,42 @@ object Path {
 }
 
 object Seg {
-  def unapply(path: String): Option[List[String]] = Some(path.split("/").toList filter { !_.isEmpty })
+  def unapply(req: Request): Option[List[String]] = {
+    unapply(req.path)
+  }
+  def unapply(path: String): Option[List[String]] = {
+    val segs = path.split('/').filterNot(_.isEmpty)
+    val heads = segs.take(segs.size - 1)
+    Some((heads ++ segs.last.split('.')).toList)
+  }
 }
 
-object FileName {
-  def unapply(path: String): Option[List[String]] = path.split('.').toList match {
-    case all if (path.contains(".")) ⇒ {
-      if (all.length == 1) Some(all)
-      else Some(List(all.init.mkString("."), all.last))
-    }
-    case all if (path.length > 0) ⇒ Some(List(path))
-    case _                        ⇒ None
+object Filename {
+  def unapply(req: Request): Option[String] = {
+    unapply(req.path)
+  }
+  def unapply(path: String): Option[String] = path.split('/').filterNot(_.isEmpty).lastOption
+}
+
+object FileExtension {
+  def unapply(req: Request): Option[String] = {
+    unapply(req.path)
+  }
+  def unapply(path: String): Option[String] = {
+    val segs = path.split('/').filterNot(_.isEmpty)
+    if (!segs.last.contains('.')) None
+    else segs.last.split('.').tail.lastOption
+  }
+}
+
+object ContentType {
+  def unapply(req: Request): Option[String] = {
+    FileExtension.unapply(req.path).map(MimeType(_)).orElse(req.allHeaderValues("accept").headOption)
   }
 }
 
 object Params {
   def unapply(req: Request) = Some(req.params)
-}
-
-object FileExtension {
-  def unapply(path: String): Option[String] = path.split('.').toList match {
-    case all if (path.contains(".")) ⇒ Some(all.last)
-    case _                           ⇒ None
-  }
 }
 
 class Method(method: String) {
