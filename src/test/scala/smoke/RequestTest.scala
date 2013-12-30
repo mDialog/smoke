@@ -40,4 +40,16 @@ class RequestTest extends FunSpec {
       assert(req.queryParams === Map())
     }
   }
+
+  describe("accept method") {
+    it("should sort accept headers by q parameters") {
+      val req = new test.TestRequest("http://test.com/test", headers = Seq("Accept" -> "text/plain;q=0.9", "Accept" -> "application/json", "Accept" -> "*/*;q=0.7", "Accept" -> "application/xml"))
+      assert(req.accept === List("application/json", "application/xml", "text/plain", "*/*"))
+    }
+
+    it("but also maintain the original order for the rest") {
+      val req = new test.TestRequest("http://test.com/test", headers = Seq("Accept" -> "text/plain;q=0.9", "Accept" -> "application/xml", "Accept" -> "application/json"))
+      assert(req.accept === List("application/xml", "application/json", "text/plain"))
+    }
+  }
 }

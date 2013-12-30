@@ -8,7 +8,7 @@ object FileNameExampleApp extends SmokeApp {
 
   val executionContext = scala.concurrent.ExecutionContext.global
   onRequest {
-    case GET(Seg("products" :: productId :: "orders" :: extension :: Nil)) ⇒ reply {
+    case GET(Seg("products" :: productId :: Filename("orders", extension) :: Nil)) ⇒ reply {
       val responseText = extension match {
         case "xml"  ⇒ "<product id=\"${productId}\"><orders /></product>"
         case "json" ⇒ "{ product: { orders: [] } }"
@@ -26,7 +26,7 @@ object FileNameExampleApp extends SmokeApp {
     //  Response(Ok, body = "No extension")
     //}
 
-    case GET(Seg("products" :: productId :: "docs" :: document :: "txt" :: Nil)) ⇒ reply {
+    case GET(Seg("products" :: productId :: "docs" :: _ :: Nil) & Filename.name(document)) ⇒ reply {
 
       document match {
         case "manual"   ⇒ Response(Ok, body = "1. Purchase our product. 2. ??? 3. Profit!")
