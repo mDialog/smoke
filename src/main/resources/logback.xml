@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+  <appender name="ACCESS_FILE" class="ch.qos.logback.core.FileAppender">
+    <file>access.log</file>
+    <encoder>
+      <pattern>%message%n</pattern>
+    </encoder>
+  </appender>
+
+  <appender name="ERROR_FILE" class="ch.qos.logback.core.FileAppender">
+    <file>error.log</file>
+    <encoder>
+      <pattern>%message%n</pattern>
+    </encoder>
+  </appender>
+
+  <logger 
+    level="INFO"
+    name="smoke.Server"
+    additivity="false">
+    
+    <appender-ref ref="ACCESS_FILE" /> 
+  </logger>
+
+  <logger 
+    level="INFO"
+    name="smoke.Server.error"
+    additivity="false">
+    
+    <appender-ref ref="ERROR_FILE" />
+    
+  </logger>
+
+</configuration>
