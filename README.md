@@ -236,6 +236,38 @@ extra config from a properties file, you would do the following:
         .withFallback(ConfigFactory.load())
     }
 
+## Logging
+
+By default Smoke will log to a file named access.log for all requests processed successfully and to a file named error.log for all 5XX level response codes.
+
+This is done using logback. There is a logger named 'smoke.Server' associated with the access logs and 'smoke.Server.error' associated with the error logs.
+
+If you want further control over the logging in Smoke you can override the default logger using logback. For example, a common use case would be to change access.log to a rolling log file. This can be done by adding your own custom logback.xml file to your application that looks like the following:
+
+  <?xml version="1.0" encoding="UTF-8" ?>
+  <configuration>
+    <appender name="ACCESS_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>access.log</file>
+    <append>true</append>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <fileNamePattern>log/business.%d{yyyy-MM-dd}</fileNamePattern>
+    </rollingPolicy>
+    <encoder>
+      <pattern>%msg%n</pattern>
+    </encoder>
+  </appender>
+
+    <logger 
+      level="INFO"
+      name="smoke.Server"
+      additivity="false">
+      
+      <appender-ref ref="ACCESS_FILE" /> 
+    </logger>
+  </configuration>
+
+This will override the default logging configuration for the access log and instead generate rolling log files. 
+
 ## Try it out
 
 Clone the repository, run one of the sample apps:

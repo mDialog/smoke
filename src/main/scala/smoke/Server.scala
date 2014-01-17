@@ -17,90 +17,9 @@ import scala.concurrent.Future
 trait Server {
   val config: Config
 
-  protected lazy val accessLogger = {
-    val logger = LoggerFactory.getLogger("smoke.Server")
-      .asInstanceOf[Logger]
-
-    logger.setAdditive(false)
-    val context = logger.getLoggerContext
-
-    config.getString("smoke.log-type") match {
-      case "file" ⇒
-        val fileEncoder = new PatternLayoutEncoder()
-        fileEncoder.setContext(context)
-        fileEncoder.setPattern("%message%n")
-        fileEncoder.start()
-
-        val logFile = config.getString("smoke.log-file")
-        val fileAppender = new FileAppender[ILoggingEvent]();
-        fileAppender.setContext(context);
-        fileAppender.setEncoder(fileEncoder);
-        fileAppender.setFile(logFile)
-        fileAppender.start();
-
-        logger.addAppender(fileAppender)
-
-      case "stdout" ⇒
-        val consoleEncoder = new PatternLayoutEncoder()
-        consoleEncoder.setContext(context)
-        consoleEncoder.setPattern("%message%n")
-        consoleEncoder.start()
-
-        val consoleAppender = new ConsoleAppender[ILoggingEvent]();
-        consoleAppender.setContext(context);
-        consoleAppender.setEncoder(consoleEncoder);
-        consoleAppender.start();
-
-        logger.addAppender(consoleAppender)
-
-      case _ ⇒
-    }
-
-    logger
-  }
-
-  protected lazy val errorLogger = {
-    val logger = LoggerFactory.getLogger("smoke.Server.error")
-      .asInstanceOf[Logger]
-
-    logger.setAdditive(false)
-    val context = logger.getLoggerContext
-
-    config.getString("smoke.error-log-type") match {
-      case "file" ⇒
-        val fileEncoder = new PatternLayoutEncoder()
-        fileEncoder.setContext(context)
-        fileEncoder.setPattern("%message%n")
-        fileEncoder.start()
-
-        val logFile = config.getString("smoke.error-log-file")
-        val fileAppender = new FileAppender[ILoggingEvent]();
-        fileAppender.setContext(context);
-        fileAppender.setEncoder(fileEncoder);
-        fileAppender.setFile(logFile)
-        fileAppender.start();
-
-        logger.addAppender(fileAppender)
-
-      case "stdout" ⇒
-        val consoleEncoder = new PatternLayoutEncoder()
-        consoleEncoder.setContext(context)
-        consoleEncoder.setPattern("%message%n")
-        consoleEncoder.start()
-
-        val consoleAppender = new ConsoleAppender[ILoggingEvent]();
-        consoleAppender.setContext(context);
-        consoleAppender.setEncoder(consoleEncoder);
-        consoleAppender.start();
-
-        logger.addAppender(consoleAppender)
-
-      case _ ⇒
-    }
-
-    logger
-  }
-
+  protected lazy val accessLogger = LoggerFactory.getLogger("smoke.Server").asInstanceOf[Logger]
+  protected lazy val errorLogger = LoggerFactory.getLogger("smoke.Server.error").asInstanceOf[Logger]
+  
   val logDateFormat = new SimpleDateFormat("dd/MMM/yyyy:HH:mm:ss Z")
 
   val log = { (request: Request, response: Response) ⇒
