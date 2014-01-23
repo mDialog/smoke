@@ -162,6 +162,20 @@ Alternatively, extending `SmokeApp` creates a stand-alone application built arou
       }
     }
 
+## Logging
+Smoke uses logback for all logging under the hood. Instead of having to define a logback configuration file for each application that uses Smoke, some convenient logging configuration options have been provided.
+
+By default Smoke allows for some basic logging for all HTTP requests to either a file or to stdout. These can be specified in the smoke configuration by setting the following values:
+
+    smoke {
+      log-type = "stdout" # alternatively, set to "file" or "logback"
+      log-file = "access.log" # used if log-type set to "file"
+    }
+
+If more advanced logging options using logback are desired, set the Smoke "log-type" configuration value to "logback" and use the logger name "smoke.Server" and "smoke.Server.error" to define custom behavior.
+
+If no logging is desired set the "log-type" configuration to any value other than the three provided above.
+
 ## Configuration
 
 Smoke uses [Typesafe Config Library](https://github.com/typesafehub/config). You can override any of the default configuration options using the `com.typesafe.Config` provided when creating your Smoke object.

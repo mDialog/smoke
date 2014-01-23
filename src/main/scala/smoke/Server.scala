@@ -53,7 +53,10 @@ trait Server {
 
         logger.addAppender(consoleAppender)
 
+      case "logback" ⇒
+
       case _ ⇒
+        logger.setLevel(Level.OFF)
     }
 
     logger
