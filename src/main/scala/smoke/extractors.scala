@@ -13,38 +13,70 @@ object Path {
 }
 
 object Seg {
-  def unapply(req: Request): Option[List[String]] = {
+  def unapply(req: Request): Option[List[String]] =
     unapply(req.path)
-  }
+
   def unapply(path: String): Option[List[String]] = {
-    val segs = path.split('/').filterNot(_.isEmpty)
-    val heads = segs.take(segs.size - 1)
-    Some((heads ++ segs.last.split('.')).toList)
+    val seg = path.split('/').filterNot(_.isEmpty).toList
+    if (seg.isEmpty) None else Some(seg)
   }
 }
 
 object Filename {
-  def unapply(req: Request): Option[String] = {
+  def unapply(req: Request): Option[(String, String)] =
     unapply(req.path)
+
+  def unapply(path: String): Option[(String, String)] =
+    getFilename(path).map { filename ⇒
+      filename.lastIndexOf('.') match {
+        case -1 ⇒ (filename, "")
+        case 0  ⇒ ("", filename)
+        case dot ⇒
+          val split = filename.splitAt(dot)
+          (split._1, split._2.tail)
+      }
+    }
+
+  object name {
+    def unapply(req: Request): Option[String] =
+      unapply(req.path)
+
+    def unapply(path: String): Option[String] =
+      Filename.unapply(path).map { n ⇒
+        n._1 match {
+          case "" ⇒ None
+          case x  ⇒ Some(x)
+        }
+      } flatten
   }
-  def unapply(path: String): Option[String] = path.split('/').filterNot(_.isEmpty).lastOption
+
+  object extension {
+    def unapply(req: Request): Option[String] =
+      unapply(req.path)
+
+    def unapply(path: String): Option[String] =
+      Filename.unapply(path).map { n ⇒
+        n._2 match {
+          case "" ⇒ None
+          case x  ⇒ Some(x)
+        }
+      } flatten
+  }
+
+  private def getFilename(path: String): Option[String] =
+    path.split('/').filterNot(_.isEmpty).lastOption
 }
 
-object FileExtension {
-  def unapply(req: Request): Option[String] = {
-    unapply(req.path)
-  }
-  def unapply(path: String): Option[String] = {
-    val segs = path.split('/').filterNot(_.isEmpty)
-    if (!segs.last.contains('.')) None
-    else segs.last.split('.').tail.lastOption
-  }
-}
-
-object ContentType {
-  def unapply(req: Request): Option[String] = {
-    FileExtension.unapply(req.path).map(MimeType(_)).orElse(req.allHeaderValues("accept").headOption)
-  }
+//Give Accepted mime type by priority, 
+//first is the most important one which is deduced from the extension, 
+//then come the accept header in priority order.
+object Accept {
+  def unapply(req: Request): Option[List[String]] =
+    Some(
+      (Filename.extension.unapply(req.path).
+        map { ext ⇒ List(MimeType(ext)) }.
+        getOrElse(List[String]()) ++
+        req.accept).distinct)
 }
 
 object Params {

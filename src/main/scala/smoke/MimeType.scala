@@ -2,7 +2,7 @@ package smoke
 
 object MimeType {
 
-  def apply(extension: String) =
+  def apply(extension: String): String =
     types.get(s".$extension").getOrElse("application/octet-stream")
 
   // Seeded with gratitude by the set from Rack 

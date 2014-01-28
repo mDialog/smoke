@@ -29,6 +29,15 @@ trait Request extends Headers {
 
   val contentLength: Int
 
+  //Sort accept header by given priority (q=?)
+  lazy val accept: Seq[String] =
+    allHeaderValues("accept").map {
+      _.split(";").toList match {
+        case mt :: p :: Nil ⇒ (mt, p.split("q=").last.toFloat)
+        case mt :: _        ⇒ (mt, 1.0f)
+      }
+    }.sortWith((a, b) ⇒ a._2 > b._2).map(_._1)
+
   override def toString = method + " - " + path + "-" + headers + "-" + "\n" + body
 
   protected def parseParams(params: String) =
