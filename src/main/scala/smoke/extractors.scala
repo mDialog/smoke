@@ -17,9 +17,15 @@ object Seg {
     unapply(req.path)
 
   def unapply(path: String): Option[List[String]] = {
-    val seg = path.split('/').filterNot(_.isEmpty).toList
+    val seg = apply(path)
     if (seg.isEmpty) None else Some(seg)
   }
+
+  def apply(req: Request): List[String] =
+    apply(req.path)
+
+  def apply(path: String): List[String] =
+    path.split('/').filterNot(_.isEmpty).toList
 }
 
 object Filename {
@@ -67,20 +73,19 @@ object Filename {
     path.split('/').filterNot(_.isEmpty).lastOption
 }
 
-//Give Accepted mime type by priority, 
-//first is the most important one which is deduced from the extension, 
-//then come the accept header in priority order.
-object Accept {
-  def unapply(req: Request): Option[List[String]] =
-    Some(
-      (Filename.extension.unapply(req.path).
-        map { ext ⇒ List(MimeType(ext)) }.
-        getOrElse(List[String]()) ++
-        req.acceptHeaders).distinct)
-}
-
 object Params {
   def unapply(req: Request) = Some(req.params)
+  def apply(req: Request) = req.params
+}
+
+object Cookies {
+  def unapply(req: Request) = Some(req.cookies)
+  def apply(req: Request) = req.cookies
+}
+
+object ContentType {
+  def unapply(req: Request) = req.contentType
+  def apply(req: Request) = req.contentType
 }
 
 class Method(method: String) {
@@ -88,10 +93,6 @@ class Method(method: String) {
     if (req.method.equalsIgnoreCase(method)) Some(req)
     else None
   def apply(req: Request) = req.method.equalsIgnoreCase(method)
-}
-
-object Cookies {
-  def unapply(req: Request) = Some(req.cookies)
 }
 
 object GET extends Method("GET")

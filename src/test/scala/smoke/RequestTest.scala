@@ -41,15 +41,37 @@ class RequestTest extends FunSpec {
     }
   }
 
-  describe("accept method") {
+  describe("acceptedMimeTypes") {
+    it("should extract type based on the extension first") {
+      val req = new test.TestRequest("http://test.com/test.xml")
+      expectResult(List("application/xml"))(req.acceptedMimeTypes)
+    }
+    it("should extract type from the accept headers") {
+      val req = new test.TestRequest("http://test.com/test", headers = Seq("Accept" -> "application/json", "Accept" -> "application/xml"))
+      expectResult(List("application/json", "application/xml"))(req.acceptedMimeTypes)
+    }
+    it("should extract type based on headers and extension, keeping extenstion the first in the list") {
+      val req = new test.TestRequest("http://test.com/test.xml", headers = Seq("Accept" -> "application/json", "Accept" -> "application/xml"))
+      expectResult(List("application/xml", "application/json"))(req.acceptedMimeTypes)
+    }
     it("should sort accept headers by q parameters") {
       val req = new test.TestRequest("http://test.com/test", headers = Seq("Accept" -> "text/plain;q=0.9", "Accept" -> "application/json", "Accept" -> "*/*;q=0.7", "Accept" -> "application/xml"))
-      assert(req.acceptHeaders === List("application/json", "application/xml", "text/plain", "*/*"))
+      expectResult(List("application/json", "application/xml", "text/plain", "*/*"))(req.acceptedMimeTypes)
     }
-
     it("but also maintain the original order for the rest") {
       val req = new test.TestRequest("http://test.com/test", headers = Seq("Accept" -> "text/plain;q=0.9", "Accept" -> "application/xml", "Accept" -> "application/json"))
-      assert(req.acceptHeaders === List("application/xml", "application/json", "text/plain"))
+      expectResult(List("application/xml", "application/json", "text/plain"))(req.acceptedMimeTypes)
+    }
+  }
+
+  describe("accept method") {
+    it("should return true if the mimetype is in the list") {
+      val req = new test.TestRequest("http://test.com/test", headers = Seq("Accept" -> "application/xml", "Accept" -> "application/json"))
+      expectResult(true)(req.accept("application/xml"))
+    }
+    it("should return true if the mimetype is not in the list") {
+      val req = new test.TestRequest("http://test.com/test", headers = Seq("Accept" -> "application/xml", "Accept" -> "application/json"))
+      expectResult(false)(req.accept("text/plain"))
     }
   }
 }

@@ -101,21 +101,6 @@ class ExtractorsTest extends FunSpec {
     }
   }
 
-  describe("Accept") {
-    it("should extract type based on the extension first") {
-      val req = new test.TestRequest("http://test.com/test.xml")
-      expectResult(Some(List("application/xml")))(Accept.unapply(req))
-    }
-    it("should extract type from the accept headers") {
-      val req = new test.TestRequest("http://test.com/test", headers = Seq("Accept" -> "application/json", "Accept" -> "application/xml"))
-      expectResult(List("application/json", "application/xml"))(Accept.unapply(req).head)
-    }
-    it("should extract type based on headers and extension, keeping extenstion the first in the list") {
-      val req = new test.TestRequest("http://test.com/test.xml", headers = Seq("Accept" -> "application/json", "Accept" -> "application/xml"))
-      expectResult(List("application/xml", "application/json"))(Accept.unapply(req).head)
-    }
-  }
-
   describe("Test Method") {
     it("apply should return whether a request matches that method") {
       val req = new test.TestRequest("http://test.com")
