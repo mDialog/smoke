@@ -26,7 +26,7 @@ object FileNameExampleApp extends SmokeApp {
     //  Response(Ok, body = "No extension")
     //}
 
-    case GET(Seg("products" :: productId :: "docs" :: _ :: Nil) & Filename.name(document)) ⇒ reply {
+    case GET(Seg("products" :: productId :: "docs" :: _ :: Nil) & Filename.base(document)) ⇒ reply {
 
       document match {
         case "manual"   ⇒ Response(Ok, body = "1. Purchase our product. 2. ??? 3. Profit!")
