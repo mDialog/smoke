@@ -30,7 +30,7 @@ trait Request extends Headers {
   val contentLength: Int
 
   //Sort accept header by given priority (q=?)
-  lazy val accept: Seq[String] =
+  lazy val acceptHeaders: Seq[String] =
     allHeaderValues("accept").map {
       _.split(";").toList match {
         case mt :: p :: Nil ⇒ (mt, p.split("q=").last.toFloat)

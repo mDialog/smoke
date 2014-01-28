@@ -74,30 +74,30 @@ class ExtractorsTest extends FunSpec {
     }
   }
 
-  describe("Filename.name") {
+  describe("Filename.base") {
 
     it("should extract basename with multiple periods") {
-      expectResult(Some("foo.bar.baz"))(Filename.name.unapply("/path/foo.bar.baz.m3u8"))
+      expectResult(Some("foo.bar.baz"))(Filename.base.unapply("/path/foo.bar.baz.m3u8"))
     }
 
     it("should extract basename with path segments") {
-      expectResult(Some("baz"))(Filename.name.unapply("/foo/bar/baz.m3u8"))
+      expectResult(Some("baz"))(Filename.base.unapply("/foo/bar/baz.m3u8"))
     }
 
     it("should extract a basename with no extension") {
-      expectResult(Some("foo"))(Filename.name.unapply("foo"))
+      expectResult(Some("foo"))(Filename.base.unapply("foo"))
     }
 
     it("should extract a basename ending with a period but no extension") {
-      expectResult(Some("foo"))(Filename.name.unapply("foo."))
+      expectResult(Some("foo"))(Filename.base.unapply("foo."))
     }
 
     it("should return None when it's an extension only") {
-      expectResult(None)(Filename.name.unapply(".foo"))
+      expectResult(None)(Filename.base.unapply(".foo"))
     }
 
     it("should return None for an empty string") {
-      expectResult(None)(Filename.name.unapply(""))
+      expectResult(None)(Filename.base.unapply(""))
     }
   }
 

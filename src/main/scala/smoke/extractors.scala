@@ -37,7 +37,7 @@ object Filename {
       }
     }
 
-  object name {
+  object base {
     def unapply(req: Request): Option[String] =
       unapply(req.path)
 
@@ -76,7 +76,7 @@ object Accept {
       (Filename.extension.unapply(req.path).
         map { ext ⇒ List(MimeType(ext)) }.
         getOrElse(List[String]()) ++
-        req.accept).distinct)
+        req.acceptHeaders).distinct)
 }
 
 object Params {
