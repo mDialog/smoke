@@ -29,14 +29,16 @@ trait Request extends Headers {
 
   val contentLength: Int
 
-  //Sort accept header by given priority (q=?)
-  lazy val acceptHeaders: Seq[String] =
-    allHeaderValues("accept").map {
-      _.split(";").toList match {
-        case mt :: p :: Nil ⇒ (mt, p.split("q=").last.toFloat)
-        case mt :: _        ⇒ (mt, 1.0f)
-      }
-    }.sortWith((a, b) ⇒ a._2 > b._2).map(_._1)
+  def accept(mType: String) = acceptedMimeTypes.contains(mType)
+
+  //Give Accepted mime types by priority, 
+  //first is the most important one which is deduced from the extension, 
+  //then come the accept header in priority order.
+  lazy val acceptedMimeTypes: List[String] =
+    (Filename.extension.unapply(path).
+      map { ext ⇒ List(MimeType(ext)) }.
+      getOrElse(List[String]()) ++
+      acceptHeaders).distinct
 
   override def toString = method + " - " + path + "-" + headers + "-" + "\n" + body
 
