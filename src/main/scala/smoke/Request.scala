@@ -6,28 +6,68 @@ trait Request extends Headers {
   val version: String
   val method: String
   val uri: URI
-  val path: String
-  val hostWithPort: String
-  val host: String
-  val port: Option[Int]
-  val ip: String
+  val requestIp: String
   val keepAlive: Boolean
   val headers: Seq[(String, String)]
+  val cookies: Map[String, String]
+  val body: String
+  val contentLength: Int
+
   val timestamp: Long = System.currentTimeMillis
 
-  val queryString: Option[String]
-  val contentType: Option[String]
-  val userAgent: Option[String]
+  lazy val host = lastHeaderValue("host").
+    map(_.split(":").head).
+    getOrElse(uri.getHost)
 
-  val queryParams: Map[String, String]
-  val formParams: Map[String, String]
-  val params: Map[String, String]
+  lazy val port: Option[Int] = {
+    lastHeaderValue("host").
+      flatMap { h ⇒
+        h.split(":").toList match {
+          case host :: port :: Nil ⇒ Some(port.toInt)
+          case _                   ⇒ None
+        }
+      } orElse {
+        uri.getPort match {
+          case i if i > 0 ⇒ Some(i)
+          case _          ⇒ None
+        }
+      }
+  }
 
-  val cookies: Map[String, String]
+  lazy val hostWithPort = host + (port map (":" + _.toString) getOrElse (""))
 
-  val body: String
+  def path = uri.getPath
 
-  val contentLength: Int
+  def queryString = Option(uri.getRawQuery)
+
+  lazy val queryParams = queryString.map(parseParams(_)).getOrElse(Map.empty[String, String])
+
+  lazy val formParams: Map[String, String] = contentType match {
+    case Some("application/x-www-form-urlencoded") ⇒ parseParams(body)
+    case _                                         ⇒ Map.empty
+  }
+
+  lazy val params = queryParams ++ formParams
+
+  lazy val ip = {
+    // If there are multiple x-forwarded-for headers, we either concatenate them 
+    // into a single ","-delimited String, or just pick the last one (since that's the value
+    // in which we are interested)
+    val xForwardedFor = lastHeaderValue("x-forwarded-for")
+
+    val xForwardedForIps: Seq[String] = xForwardedFor match {
+      case Some(ips) ⇒ ips.split(",")
+        .map(h ⇒ h.trim)
+        .filter(h ⇒ !Request.isTrusted(h))
+        .toSeq
+      case None ⇒ Seq.empty
+    }
+
+    xForwardedForIps.isEmpty match {
+      case true  ⇒ requestIp
+      case false ⇒ xForwardedForIps.last
+    }
+  }
 
   def accept(mType: String) = acceptedMimeTypes.contains(mType)
 
