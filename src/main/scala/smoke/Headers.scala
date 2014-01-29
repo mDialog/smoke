@@ -1,5 +1,9 @@
 package smoke
 
+import scala.util.Try
+import java.nio.charset.Charset
+import org.jboss.netty.util.CharsetUtil
+
 trait Headers {
   val headers: Seq[(String, String)]
 
@@ -27,4 +31,14 @@ trait Headers {
       }
     }.sortWith((a, b) ⇒ a._2 > b._2).map(_._1)
 
+  lazy val contentType = lastHeaderValue("content-type")
+
+  lazy val charset = contentType map { t ⇒
+    t.split(";").filter(_.contains("charset")).map(_.split("=")).map(x ⇒ (x.last)).toSeq.headOption match {
+      case Some(c) ⇒ Try(Charset.forName(c)).toOption.getOrElse(CharsetUtil.UTF_8)
+      case None    ⇒ CharsetUtil.UTF_8
+    }
+  } getOrElse (CharsetUtil.UTF_8)
+
+  lazy val userAgent = lastHeaderValue("user-agent")
 }
