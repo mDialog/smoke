@@ -2,6 +2,7 @@ package smoke.examples
 
 import smoke._
 import com.typesafe.config.ConfigFactory
+import scala.concurrent.Future
 
 class RequestHandlerException extends Exception
 class FutureResultException extends Exception
@@ -14,7 +15,7 @@ object ErrorHandlerExampleApp extends App {
 
 class ErrorHandlerExampleSmoke extends Smoke {
   val config = ConfigFactory.load().getConfig("smoke")
-  val executionContext = scala.concurrent.ExecutionContext.global
+  implicit val executionContext = scala.concurrent.ExecutionContext.global
 
   before {
     case GET(Path("/before-exception")) ⇒
@@ -23,10 +24,8 @@ class ErrorHandlerExampleSmoke extends Smoke {
   }
 
   onRequest {
-    case GET(Path("/future-result-error")) ⇒ reply {
-      throw new FutureResultException
-      Response(Ok, body = "Hello world")
-    }
+    case GET(Path("/future-result-error")) ⇒
+      fail(new FutureResultException)
 
     case GET(Path("/request-handler-error")) ⇒
       throw new RequestHandlerException
@@ -39,14 +38,14 @@ class ErrorHandlerExampleSmoke extends Smoke {
   }
 
   onError {
-    case e: FutureResultException ⇒
-      Response(InternalServerError, body = "Future result exception")
-    case e: RequestHandlerException ⇒
-      Response(InternalServerError, body = "Request handler exception")
-    case e: BeforeException ⇒
-      Response(InternalServerError, body = "Before filter exception")
-    case e: AfterException ⇒
-      Response(InternalServerError, body = "After filter exception")
+    case (r, e: FutureResultException) ⇒
+      Response(InternalServerError, body = "Future result exception while processing " + r.toShortString)
+    case (r, e: RequestHandlerException) ⇒
+      Response(InternalServerError, body = "Request handler exception while processing " + r.toShortString)
+    case (r, e: BeforeException) ⇒
+      Response(InternalServerError, body = "Before filter exception while processing " + r.toShortString)
+    case (r, e: AfterException) ⇒
+      Response(InternalServerError, body = "After filter exception while processing " + r.toShortString)
   }
 
   after {

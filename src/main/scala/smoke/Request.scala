@@ -81,6 +81,7 @@ trait Request extends Headers {
       acceptHeaders).distinct
 
   override def toString = method + " - " + path + "-" + headers + "-" + "\n" + body
+  def toShortString = method + " - " + path
 
   protected def parseParams(params: String) =
     (params.split("&") map (_.split("=").toList) map {
