@@ -13,7 +13,10 @@ trait Headers {
       case _                     ⇒ None
     }
 
-  def allHeaderValues(header: String) = headers.filter(h ⇒ h._1.toLowerCase == header.toLowerCase) map { case (k, v) ⇒ v }
+  def allHeaderValues(header: String) =
+    headers.filter(h ⇒ h._1.toLowerCase == header.toLowerCase) map {
+      case (k, v) ⇒ v
+    }
 
   def concatenateHeaderValues(header: String) = allHeaderValues(header) match {
     case x if x.isEmpty ⇒ None
@@ -24,7 +27,7 @@ trait Headers {
 
   //Sort accept header by given priority (q=?)
   lazy val acceptHeaders: Seq[String] =
-    allHeaderValues("accept").map {
+    allHeaderValues("accept").map(_.split(",")).flatten.map {
       _.split(";").toList match {
         case mt :: p :: Nil ⇒ (mt, p.split("q=").last.toFloat)
         case mt :: _        ⇒ (mt, 1.0f)
