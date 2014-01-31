@@ -29,8 +29,8 @@ object ActorPoolExampleApp extends SmokeApp {
   onRequest(pool ? _ mapTo manifest[Response])
 
   onError {
-    case NotFoundException ⇒ Response(NotFound)
-    case e: Exception      ⇒ Response(InternalServerError, body = e.getMessage)
+    case (_, NotFoundException) ⇒ Response(NotFound)
+    case (_, e: Exception)      ⇒ Response(InternalServerError, body = e.getMessage)
   }
 
   after { response ⇒

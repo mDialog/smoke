@@ -23,8 +23,8 @@ trait Smoke extends DelayedInit {
     Future.successful(Response(ServiceUnavailable))
   }
   private var afterFilter = { response: Response ⇒ response }
-  private var errorHandler: PartialFunction[Throwable, Response] = {
-    case t: Throwable ⇒ Response(InternalServerError, body = t.getMessage + "\n" +
+  private var errorHandler: PartialFunction[(Request, Throwable), Response] = {
+    case (r, t: Throwable) ⇒ Response(InternalServerError, body = t.getMessage + "\n" +
       t.getStackTrace.mkString("\n"))
   }
 
@@ -32,17 +32,26 @@ trait Smoke extends DelayedInit {
     server.stop()
   })
 
-  private def withErrorHandling[T](errorProne: T ⇒ Future[Response]) = {
-    def maybeFails(x: T): Future[Response] = {
-      try {
-        errorProne(x)
-      } catch {
-        case e: Exception ⇒
-          Future.failed(e)
-      }
+  private def withErrorHandling(errorProne: smoke.Request ⇒ Future[Response]) = {
+    case class RequestHandlerException(r: smoke.Request, e: Throwable) extends Exception("", e) {
+      def asTuple: (smoke.Request, Throwable) = (r, e)
     }
 
-    maybeFails _ andThen { _ recover errorHandler }
+    def maybeFails(x: smoke.Request): Future[Response] = {
+      try {
+        errorProne(x) recoverWith encapsulate(x)
+      } catch encapsulate(x)
+    }
+
+    def encapsulate(x: smoke.Request): PartialFunction[Throwable, Future[Response]] = {
+      case t: Throwable ⇒ fail(RequestHandlerException(x, t))
+    }
+
+    val decapsulate: PartialFunction[Throwable, (smoke.Request, Throwable)] = {
+      case rhe: RequestHandlerException ⇒ rhe.asTuple
+    }
+
+    maybeFails _ andThen { _ recover (decapsulate andThen errorHandler) }
   }
 
   def application = withErrorHandling {
@@ -55,7 +64,7 @@ trait Smoke extends DelayedInit {
 
   def onRequest(handler: (Request) ⇒ Future[Response]) { responder = handler }
 
-  def onError(handler: PartialFunction[Throwable, Response]) {
+  def onError(handler: PartialFunction[(Request, Throwable), Response]) {
     errorHandler = handler orElse errorHandler
   }
 

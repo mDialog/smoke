@@ -18,14 +18,14 @@ class ErrorHandlerExampleAppTest extends FunSpec with BeforeAndAfterAll {
     it("should raise a handled exception") {
       val request = TestRequest("/before-exception")
       val response = Await.result(app.application(request), 2 seconds)
-      assert(response.body.toString === "Before filter exception")
+      assert(response.body.toString === "Before filter exception while processing " + request.toShortString)
     }
   }
   describe("GET /after-exception") {
     it("should raise a handled exception") {
       val request = TestRequest("/after-exception")
       val response = Await.result(app.application(request), 2 seconds)
-      assert(response.body.toString === "After filter exception")
+      assert(response.body.toString === "After filter exception while processing " + request.toShortString)
     }
   }
 
@@ -33,7 +33,7 @@ class ErrorHandlerExampleAppTest extends FunSpec with BeforeAndAfterAll {
     it("should respond with 200") {
       val request = TestRequest("/future-result-error")
       val response = Await.result(app.application(request), 2 seconds)
-      assert(response.body.toString === "Future result exception")
+      assert(response.body.toString === "Future result exception while processing " + request.toShortString)
     }
   }
 
@@ -41,7 +41,7 @@ class ErrorHandlerExampleAppTest extends FunSpec with BeforeAndAfterAll {
     it("should respond with 200") {
       val request = TestRequest("/request-handler-error")
       val response = Await.result(app.application(request), 2 seconds)
-      assert(response.body.toString === "Request handler exception")
+      assert(response.body.toString === "Request handler exception while processing " + request.toShortString)
     }
   }
 
