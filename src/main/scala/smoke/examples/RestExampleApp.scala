@@ -11,6 +11,7 @@ object RestExampleApp extends App {
   val smoke = new RestExampleSmoke
 }
 
+//Authentication extractor
 object Authenticated {
   private val apiKey = "key"
   val sessionMngr = new SessionManager("secret")
@@ -25,7 +26,7 @@ object Authenticated {
 }
 
 class RestExampleSmoke extends Smoke with StaticAssets {
-  val config = ConfigFactory.load().getConfig("smoke")
+  val smokeConfig = ConfigFactory.load().getConfig("smoke")
   implicit val executionContext = scala.concurrent.ExecutionContext.global
   import Authenticated.sessionMngr._
 
@@ -50,15 +51,15 @@ class RestExampleSmoke extends Smoke with StaticAssets {
   }
 
   val privateResponder: Responder = {
-    case r @ GET(Filename.base("book")) ⇒
+    case r @ GET(Seg(Filename.base("book") :: Nil)) ⇒
       reply(Response(Ok, headers = Seq("Content-Type" -> "text/html"), body = "<html>Books !</html>")) //UI only
 
-    case r @ POST(Filename.base("book")) & ContentType("application/xml") ⇒
+    case r @ POST(Seg(Filename.base("book") :: Nil)) & ContentType("application/xml") ⇒
       //Create a book here
       val id = "new-id"
       reply(Response(Created, headers = Seq("Location" -> s"books/$id")))
 
-    case POST(Filename.base("book")) ⇒  //Unsupported content type
+    case POST((Seg(Filename.base("book") :: Nil))) ⇒ //Unsupported content type
       reply(Response(BadRequest))
 
     case r @ GET(Seg("book" :: Filename(id, extension) :: Nil)) ⇒

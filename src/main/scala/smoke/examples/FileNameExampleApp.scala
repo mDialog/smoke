@@ -4,7 +4,7 @@ import smoke._
 import com.typesafe.config.ConfigFactory
 
 object FileNameExampleApp extends SmokeApp {
-  val config = ConfigFactory.load().getConfig("smoke")
+  val smokeConfig = ConfigFactory.load().getConfig("smoke")
 
   val executionContext = scala.concurrent.ExecutionContext.global
   onRequest {

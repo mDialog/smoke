@@ -20,8 +20,8 @@ class PooledResponder extends Actor {
 }
 
 object ActorPoolExampleApp extends SmokeApp {
-  val config = ConfigFactory.load().getConfig("smoke")
-  val system = ActorSystem("ActorPoolExampleApp", config)
+  val smokeConfig = ConfigFactory.load().getConfig("smoke")
+  val system = ActorSystem("ActorPoolExampleApp", smokeConfig)
   val executionContext = system.dispatcher
   val pool = system.actorOf(Props[PooledResponder].withRouter(RoundRobinRouter(200)))
   implicit val timeout = Timeout(10000)

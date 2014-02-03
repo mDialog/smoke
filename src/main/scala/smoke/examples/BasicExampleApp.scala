@@ -8,7 +8,7 @@ object BasicExampleApp extends App {
 }
 
 class BasicExampleSmoke extends Smoke {
-  val config = ConfigFactory.load().getConfig("smoke")
+  val smokeConfig = ConfigFactory.load().getConfig("smoke")
   val executionContext = scala.concurrent.ExecutionContext.global
 
   onRequest {

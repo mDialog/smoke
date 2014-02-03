@@ -17,8 +17,8 @@ class Responder extends Actor {
 }
 
 object ActorExampleApp extends SmokeApp {
-  val config = ConfigFactory.load().getConfig("smoke")
-  val system = ActorSystem("ActorExampleApp", config)
+  val smokeConfig = ConfigFactory.load().getConfig("smoke")
+  val system = ActorSystem("ActorExampleApp", smokeConfig)
   val executionContext = system.dispatcher
   val actor = system.actorOf(Props[Responder])
 

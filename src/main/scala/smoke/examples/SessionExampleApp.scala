@@ -6,9 +6,9 @@ import scala.concurrent.ExecutionContext
 
 object SessionExampleApp extends SmokeApp {
   val executionContext = scala.concurrent.ExecutionContext.global
-  val config = ConfigFactory.load().getConfig("smoke")
+  val smokeConfig = ConfigFactory.load().getConfig("smoke")
 
-  val sessionManager = new SessionManager(config.getString("session.secret"))
+  val sessionManager = new SessionManager(smokeConfig.getString("session.secret"))
   import sessionManager._
 
   def prettyHistory(history: String) =

@@ -14,9 +14,8 @@ object MultipleSmokeApp extends App {
   val smoke2 = new SampleSmoke(config.getConfig("smoke7773"), dispatcher)
 }
 
-class SampleSmoke(val config: Config, val executionContext: ExecutionContext) extends Smoke {
-
-  val ports = config.getIntList("http.ports") //.asScala.mkString("-")
+class SampleSmoke(val smokeConfig: Config, val executionContext: ExecutionContext) extends Smoke {
+  val ports = smokeConfig.getIntList("http.ports")
 
   onRequest {
     case GET(Path("/example")) ⇒ reply {

@@ -14,7 +14,7 @@ object ErrorHandlerExampleApp extends App {
 }
 
 class ErrorHandlerExampleSmoke extends Smoke {
-  val config = ConfigFactory.load().getConfig("smoke")
+  val smokeConfig = ConfigFactory.load().getConfig("smoke")
   implicit val executionContext = scala.concurrent.ExecutionContext.global
 
   before {
