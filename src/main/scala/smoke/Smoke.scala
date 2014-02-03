@@ -11,10 +11,10 @@ trait SmokeApp extends App with Smoke {
 }
 
 trait Smoke extends DelayedInit {
-  val config: Config
+  val smokeConfig: Config
   implicit val executionContext: ExecutionContext
 
-  private lazy val server = new NettyServer()(config, executionContext)
+  private lazy val server = new NettyServer()(smokeConfig, executionContext)
 
   private var running = false
 

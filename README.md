@@ -115,7 +115,7 @@ If your `Future[Response]` contains an exception, you can catch it and return an
 	}
 
 	onError {
-	  case NotFoundException => Response(NotFound)
+	  case (request, NotFoundException) => Response(NotFound)
 	}
 
 This is especially useful when using a responder function composed from several Futures.
@@ -179,6 +179,7 @@ If no logging is desired set the "log-type" configuration to any value other tha
 ## Configuration
 
 Smoke uses [Typesafe Config Library](https://github.com/typesafehub/config). You can override any of the default configuration options using the `com.typesafe.Config` provided when creating your Smoke object.
+The config passes to the smoke trait should be formatted as followed (without the smoke global object) :
 
     smoke {
       log-type = "stdout" # alternatively, set to "file"
