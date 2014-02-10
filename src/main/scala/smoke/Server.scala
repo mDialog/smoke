@@ -18,7 +18,7 @@ trait Server {
   val config: Config
 
   protected lazy val accessLogger = {
-    val logger = LoggerFactory.getLogger("Server")
+    val logger = LoggerFactory.getLogger("smoke.Server")
       .asInstanceOf[Logger]
 
     logger.setAdditive(false)
@@ -63,7 +63,7 @@ trait Server {
   }
 
   protected lazy val errorLogger = {
-    val logger = LoggerFactory.getLogger("Server.error")
+    val logger = LoggerFactory.getLogger("smoke.Server.error")
       .asInstanceOf[Logger]
 
     logger.setAdditive(false)
