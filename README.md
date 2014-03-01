@@ -28,7 +28,7 @@ Smoke provides a DSL for building HTTP services using a simple request/response 
 	}
 
 	class BasicExampleSmoke extends Smoke {
-  		val smokeConfig = ConfigFactory.load().getConfig("smoke")
+  		val config = ConfigFactory.load().getConfig("smoke")
   		val executionContext = scala.concurrent.ExecutionContext.global
 
   		onRequest {
