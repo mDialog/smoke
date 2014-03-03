@@ -9,11 +9,11 @@ A thin DSL for building simple, fast, scalable, asynchronous HTTP services with 
 
 In your build.sbt
 
-    resolvers += "mDialog snapshots" at "http://mdialog.github.com/snapshots/"
+    resolvers += "mDialog releases" at "http://mdialog.github.com/releases/"
 
-    libraryDependencies += "com.mdialog" %% "smoke" % "2.0.0-SNAPSHOT"
+    libraryDependencies += "com.mdialog" %% "smoke" % "2.0.1"
 
-Smoke 2.0.0 is made for use with Scala 2.10. If you're using an older
+Smoke 2.0.1 is made for use with Scala 2.10. If you're using an older
 version of Scala, consider Smoke [0.3.0](https://github.com/mDialog/smoke/tree/5a0038099ff67113234fb8342a7328df6be1e9e4). 
 
 ## Getting started
