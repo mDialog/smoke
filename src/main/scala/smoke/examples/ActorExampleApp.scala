@@ -5,6 +5,7 @@ import smoke._
 import akka.actor._
 import akka.pattern.ask
 import akka.util.Timeout
+import scala.concurrent.duration._
 import com.typesafe.config.ConfigFactory
 
 class Responder extends Actor {
@@ -22,7 +23,7 @@ object ActorExampleApp extends SmokeApp {
   val executionContext = system.dispatcher
   val actor = system.actorOf(Props[Responder])
 
-  implicit val timeout = Timeout(10000)
+  implicit val timeout = Timeout(10.seconds)
 
   onRequest(actor ? _ mapTo manifest[Response])
 

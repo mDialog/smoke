@@ -1,10 +1,10 @@
 package smoke
 
-import org.scalatest.FunSpec
+import org.scalatest.FunSpecLike
 
 import smoke.test._
 
-class SessionTest extends FunSpec {
+class SessionTest extends FunSpecLike {
   val appSecret = "0sfi034nrosd23kaldasl"
   val sessionManager = new SessionManager(appSecret)
   import sessionManager._

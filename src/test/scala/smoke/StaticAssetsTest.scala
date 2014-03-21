@@ -1,11 +1,11 @@
 package smoke
 
-import org.scalatest.FunSpec
+import org.scalatest.FunSpecLike
 import scala.concurrent.duration.Duration
 
 import smoke.test._
 
-class StaticAssetsTest extends FunSpec {
+class StaticAssetsTest extends FunSpecLike {
 
   class MockAsset extends StaticAssets {
     val publicFolder = "public"

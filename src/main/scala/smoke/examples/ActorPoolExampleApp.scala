@@ -3,9 +3,10 @@ package smoke.examples
 import smoke._
 
 import akka.actor._
-import akka.routing.RoundRobinRouter
+import akka.routing.RoundRobinPool
 import akka.pattern.ask
 import akka.util.Timeout
+import scala.concurrent.duration._
 import com.typesafe.config.ConfigFactory
 
 object NotFoundException extends Exception("Not found")
@@ -23,8 +24,8 @@ object ActorPoolExampleApp extends SmokeApp {
   val smokeConfig = ConfigFactory.load().getConfig("smoke")
   val system = ActorSystem("ActorPoolExampleApp", smokeConfig)
   val executionContext = system.dispatcher
-  val pool = system.actorOf(Props[PooledResponder].withRouter(RoundRobinRouter(200)))
-  implicit val timeout = Timeout(10000)
+  val pool = system.actorOf(Props[PooledResponder].withRouter(RoundRobinPool(200)))
+  implicit val timeout = Timeout(10.seconds)
 
   onRequest(pool ? _ mapTo manifest[Response])
 
