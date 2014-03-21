@@ -2,7 +2,7 @@ name := "smoke"
 
 organization := "com.mdialog"
 
-version := "2.0.1"
+version := "2.1.0"
 
 scalaVersion := "2.10.3"
 
@@ -18,9 +18,9 @@ libraryDependencies ++= Seq(
   "org.clapper" % "grizzled-slf4j_2.10" % "1.0.1",
   "ch.qos.logback" % "logback-classic" % "1.0.5",
   "io.netty" % "netty" % "3.7.0.Final",
-  "com.typesafe" % "config" % "0.4.0",
-  "com.typesafe.akka" %% "akka-actor" % "2.2.3",
-  "org.scalatest" %% "scalatest" % "1.9.1" % "test"
+  "com.typesafe" % "config" % "1.2.0",
+  "com.typesafe.akka" %% "akka-actor" % "2.3.0",
+  "org.scalatest" %% "scalatest" % "2.1.0" % "test"
 )
 
 resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"

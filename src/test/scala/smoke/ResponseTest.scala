@@ -1,9 +1,9 @@
 package smoke
 
-import org.scalatest.FunSpec
+import org.scalatest.FunSpecLike
 import io.Source
 
-class ResponseTest extends FunSpec {
+class ResponseTest extends FunSpecLike {
   describe("statusCode") {
     it("should return status code") {
       assert(Response(Ok).statusCode == Ok.code)
