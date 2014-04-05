@@ -1,7 +1,7 @@
 Smoke
 ======
 
-*Simple, asynchronous HTTP using Scala Future*
+*Simple, asynchronous HTTP using scala.concurrent.Future*
 
 A thin DSL for building simple, fast, scalable, asynchronous HTTP services with Scala.
 
@@ -124,11 +124,13 @@ If your `Future[Response]` contains an exception, you can catch it and return an
 This is especially useful when using a responder function composed from several Futures.
 
 ## Smoke workflow
-Combining all those handlers, smoke processes requests that way :
+
+Combining all those handlers, requests are processed like so:
 
     def application = withErrorHandling {
     		beforeFilter andThen responder andThen { _ map afterFilter }
   		}
+  		
 ## Graceful shutdown
 
 Smoke will shutdown the server and `ActorSystem` when the process receives a `TERM` signal, from Ctrl-C or `kill <pid>` for instance. You can attach shutdown hooks both before and after this shutdown occurs.
@@ -143,7 +145,7 @@ Smoke will shutdown the server and `ActorSystem` when the process receives a `TE
 
 ## Using SmokeApp
 
-Alternatively, extending `SmokeApp` creates a stand-alone application built around a Smoke HTTP server.
+Extending `SmokeApp` rather than `Smoke` creates a stand-alone application built around a Smoke HTTP server.
 
 	import smoke._
 	import com.typesafe.config.ConfigFactory
@@ -162,7 +164,7 @@ Alternatively, extending `SmokeApp` creates a stand-alone application built arou
     }
 
 ## Logging
-Smoke uses logback for all logging under the hood. Instead of having to define a logback configuration file for each application that uses Smoke, some convenient logging configuration options have been provided.
+Smoke uses logback for all logging. Instead of having to define a logback configuration file for each application that uses Smoke, some convenient logging configuration options have been provided.
 
 By default Smoke allows for some basic logging for all HTTP requests to either a file or to stdout. These can be specified in the smoke configuration by setting the following values:
 
@@ -173,7 +175,7 @@ By default Smoke allows for some basic logging for all HTTP requests to either a
 
 If more advanced logging options using logback are desired, set the Smoke "log-type" configuration value to "logback" and use the logger name "smoke.Server" and "smoke.Server.error" to define custom behavior.
 
-If no logging is desired set the "log-type" configuration to any value other than the three provided above.
+If no logging is desired set the "log-type" configuration to "none".
 
 ## SSL and Client Certificates
 
@@ -182,7 +184,7 @@ Smoke supports SSL, including optional use of client certificates. See the confi
 ## Configuration
 
 Smoke uses [Typesafe Config Library](https://github.com/typesafehub/config). You can override any of the default configuration options using the `com.typesafe.Config` provided when creating your Smoke object.
-The config passes to the smoke trait should be formatted as followed (without the smoke global object) :
+The config passed to the smoke trait should be formatted as followed (without the smoke global object):
 
     smoke {
       log-type = "stdout" # alternatively, set to "file"
@@ -266,9 +268,7 @@ Unit testing components of your application that interact with Smoke is made eas
                            keepAlive: Boolean = true) extends Request
 
 
-Using this class allows testing of your application's responder function.
-
-You can test a smoke instance by instanciating it and shutting it down inside a test suite. Invoke the application method directly, passing it a TestRequest.
+Use this class to test your application's responder function. You can test a Smoke instance by instantiating it and shutting it down inside a test. Invoke the application method directly passing it a TestRequest then write assertions against the resulting response.
 
     import org.scalatest.{ FunSpec, BeforeAndAfterAll }
 
@@ -305,7 +305,7 @@ This is the same way Smoke processes requests while your app is running.
 
 ## Documentation
 
-Read the API documentation here: [http://mdialog.github.com/api/smoke-1.1.0/](http://mdialog.github.com/api/smoke-1.1.0/)
+Read the API documentation here: [http://mdialog.github.com/api/smoke-2.1.0/](http://mdialog.github.com/api/smoke-2.1.0/)
 
 ## Mailing list
 
