@@ -141,11 +141,7 @@ Smoke will shutdown the server and `ActorSystem` when the process receives a `TE
       println("No longer responding to requests.")
     }
 
-## SSL and Client Certificates
-
-Smoke supports SSL, including optional use of client certificates. See the configuration section for more information.
-
-### Using SmokeApp
+## Using SmokeApp
 
 Alternatively, extending `SmokeApp` creates a stand-alone application built around a Smoke HTTP server.
 
@@ -178,6 +174,10 @@ By default Smoke allows for some basic logging for all HTTP requests to either a
 If more advanced logging options using logback are desired, set the Smoke "log-type" configuration value to "logback" and use the logger name "smoke.Server" and "smoke.Server.error" to define custom behavior.
 
 If no logging is desired set the "log-type" configuration to any value other than the three provided above.
+
+## SSL and Client Certificates
+
+Smoke supports SSL, including optional use of client certificates. See the configuration section for more information.
 
 ## Configuration
 
