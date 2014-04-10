@@ -1,6 +1,8 @@
 Smoke
 ======
 
+[![Build Status](https://travis-ci.org/mDialog/smoke.svg?branch=master)](https://travis-ci.org/mDialog/smoke)
+
 *Simple, asynchronous HTTP using scala.concurrent.Future*
 
 A thin DSL for building simple, fast, scalable, asynchronous HTTP services with Scala.
@@ -14,10 +16,10 @@ In your build.sbt
     libraryDependencies += "com.mdialog" %% "smoke" % "2.0.1" //for akka 2.2.+
 
     libraryDependencies += "com.mdialog" %% "smoke" % "2.1.0" //for akka 2.3.+
-    
+
 
 Smoke 2.+ is made for use with Scala 2.10. If you're using an older
-version of Scala, consider Smoke [0.3.0](https://github.com/mDialog/smoke/tree/5a0038099ff67113234fb8342a7328df6be1e9e4). 
+version of Scala, consider Smoke [0.3.0](https://github.com/mDialog/smoke/tree/5a0038099ff67113234fb8342a7328df6be1e9e4).
 
 ## Getting started
 
@@ -130,7 +132,7 @@ Combining all those handlers, requests are processed like so:
     def application = withErrorHandling {
     		beforeFilter andThen responder andThen { _ map afterFilter }
   		}
-  		
+
 ## Graceful shutdown
 
 Smoke will shutdown the server and `ActorSystem` when the process receives a `TERM` signal, from Ctrl-C or `kill <pid>` for instance. You can attach shutdown hooks both before and after this shutdown occurs.
@@ -153,7 +155,7 @@ Extending `SmokeApp` rather than `Smoke` creates a stand-alone application built
     object BasicExampleApp extends SmokeApp {
   	  val smokeConfig = ConfigFactory.load().getConfig("smoke")
   	  val executionContext = scala.concurrent.ExecutionContext.global
-      
+
       onRequest {
         case GET(Path("/example")) => reply {
           Thread.sleep(1000)
@@ -242,7 +244,7 @@ The config passed to the smoke trait should be formatted as followed (without th
       static-assets {
         cache-assets = true
         cache-assets-preload = false
-        
+
         public-dir = "public"
       }
     }
