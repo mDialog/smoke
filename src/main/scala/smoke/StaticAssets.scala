@@ -1,68 +1,59 @@
 package smoke
 
 import java.io.{ File, FileInputStream, FileNotFoundException }
+import scala.util.Try
+import scala.io.Source
 
 case class Asset(contentType: String, data: Array[Byte])
 
 trait StaticAssets {
   val publicFolder: String
   val cacheAssets: Boolean = false
-  val cacheAssetsPreload: Boolean = false
+
+  private var cachedAssets = Map[String, Asset]()
 
   private def getExtension(name: String) = {
     val dotIndex = name.lastIndexOf('.')
-
     if (dotIndex == -1) "" else name.substring(dotIndex + 1)
   }
 
-  private def readFile(file: File) = {
-    val in = new FileInputStream(file)
-    val bytes = new Array[Byte](file.length.toInt)
-
-    in.read(bytes)
-    in.close()
-
-    bytes
-  }
-
-  private lazy val assetFolder = Option(this.getClass.getClassLoader.getResource(publicFolder)) match {
-    case Some(url) ⇒ url.toString.split("file:").last
-    case _         ⇒ throw new Exception("Error: static assets folder is not accessible")
-  }
-
-  private def loadAssets(folder: File): Seq[(String, Asset)] =
-    folder.exists match {
-      case true ⇒
-        folder.listFiles flatMap {
-          case file if file.isFile ⇒
-            val relativePath = file.getPath.drop(assetFolder.length)
-            val extension = getExtension(file.getName)
-            Seq(relativePath -> Asset(MimeType(extension), readFile(file)))
-
-          case directory ⇒ loadAssets(directory)
-        }
-      case false ⇒ Seq.empty
-    }
-
-  private lazy val cachedAssets = loadAssets(new File(assetFolder)).toMap
-
-  private val loadAsset: String ⇒ Option[Asset] =
-    if (cacheAssets)
-      (path: String) ⇒ cachedAssets.get(path)
-    else
-      (path: String) ⇒
+  private def readFile(path: String) = {
+    Option(this.getClass.getClassLoader.getResourceAsStream(path)) map {
+      is ⇒
         try {
-          val file = new File(s"$assetFolder$path")
-          val extension = getExtension(file.getName)
-          Some(Asset(MimeType(extension), readFile(file)))
-        } catch {
-          case e: FileNotFoundException ⇒ None
+          Source.fromInputStream(is).map(_.toByte).toArray
+        } finally {
+          is.close()
         }
+    }
+  }
 
-  if (cacheAssetsPreload && cacheAssets) cachedAssets
+  private def loadAsset(p: String): Option[Asset] = {
+    val path = s"$publicFolder$p"
+    readFile(path) map { bytes ⇒
+      val extension = getExtension(path)
+      Asset(MimeType(extension), bytes)
+    }
+  }
+
+  private val getAsset: String ⇒ Option[Asset] =
+    if (cacheAssets)
+      (path: String) ⇒ cachedAssets.get(path).orElse {
+        val asset = loadAsset(path)
+        asset.map { a ⇒
+          cachedAssets += path -> a
+        }
+        asset
+      }
+    else (path: String) ⇒ loadAsset(path)
 
   def responseFromAsset(path: String): Response = {
-    loadAsset(path) match {
+    val securedPath = path.split("/").filterNot {
+      case ".." ⇒ true
+      case "."  ⇒ true
+      case _    ⇒ false
+    } mkString ("/")
+    getAsset(securedPath) match {
       case Some(asset) ⇒
         Response(Ok, Seq("Content-Type" -> asset.contentType), RawData(asset.data))
       case None ⇒
