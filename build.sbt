@@ -4,7 +4,7 @@ organization := "com.mdialog"
 
 version := "2.1.0"
 
-scalaVersion := "2.10.3"
+scalaVersion := "2.11.0"
 
 scalacOptions ++= Seq(
   "-unchecked",
@@ -19,8 +19,8 @@ libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % "1.0.5",
   "io.netty" % "netty" % "3.7.0.Final",
   "com.typesafe" % "config" % "1.2.0",
-  "com.typesafe.akka" %% "akka-actor" % "2.3.0",
-  "org.scalatest" %% "scalatest" % "2.1.0" % "test"
+  "com.typesafe.akka" %% "akka-actor" % "2.3.2",
+  "org.scalatest" %% "scalatest" % "2.1.3" % "test"
 )
 
 resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
