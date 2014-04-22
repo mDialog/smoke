@@ -65,6 +65,10 @@ class RequestTest extends FunSpecLike {
       val req = new test.TestRequest("http://test.com/test", headers = Seq("Accept" -> "text/plain;q=0.9", "Accept" -> "application/xml", "Accept" -> "application/json"))
       assertResult(List("application/xml", "application/json", "text/plain"))(req.acceptedMimeTypes)
     }
+    it("and correctly handle malformed accept headers") {
+      val req = new test.TestRequest("http://test.com/test", headers = Seq("Accept" -> "text/plain;q=foo", "Accept" -> "application/xml;q=0.8", "Accept" -> "*/*;q=0.5"))
+      assertResult(List("text/plain", "application/xml", "*/*"))(req.acceptedMimeTypes)
+    }
   }
 
   describe("accept method") {

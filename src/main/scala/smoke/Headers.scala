@@ -29,10 +29,11 @@ trait Headers {
   lazy val acceptHeaders: Seq[String] =
     allHeaderValues("accept").map(_.split(",")).flatten.map {
       _.split(";").toList match {
-        case mt :: p :: Nil ⇒ (mt, p.split("q=").last.toFloat)
-        case mt :: _        ⇒ (mt, 1.0f)
+        case mt :: p :: Nil ⇒ Try(p.split("q=").last.toFloat).map(Some(mt, _)).getOrElse(Some(mt,1.0f))
+        case mt :: _        ⇒ Some(mt, 1.0f)
+        case _              ⇒ None
       }
-    }.sortWith((a, b) ⇒ a._2 > b._2).map(_._1)
+    }.flatten.sortWith((a, b) ⇒ a._2 > b._2).map(_._1)
 
   lazy val contentType = lastHeaderValue("content-type")
 
