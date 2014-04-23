@@ -325,6 +325,6 @@ Unsure of where to start? Pick a TODO, or consider one of the following contribu
 
 ## Contributors
 
-Chris Dinn, David Harcombe, Gaetan Hervouet, Sebastian Hubbard, Matt MacAulay, Arron Norwell, Sana Tapal
+Vikraman Choudhury, Chris Dinn, David Harcombe, Gaetan Hervouet, Sebastian Hubbard, Matt MacAulay, Arron Norwell, Sana Tapal
 
-**©2013 mDialog Corp. All rights reserved.**
+**©2014 mDialog Corp. All rights reserved.**
