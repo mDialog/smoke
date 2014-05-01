@@ -1,6 +1,7 @@
 package smoke
 
 import java.net.{ URI, URLDecoder }
+import util.parsing.json.JSON
 
 trait Request extends Headers {
   val version: String
@@ -44,6 +45,8 @@ trait Request extends Headers {
 
   lazy val formParams: Map[String, String] = contentType match {
     case Some("application/x-www-form-urlencoded") ⇒ parseParams(body)
+    case Some(s) if s startsWith "application/json" => parseParamsJson(body)
+
     case _                                         ⇒ Map.empty
   }
 
@@ -89,6 +92,15 @@ trait Request extends Headers {
       case name :: Nil          ⇒ Some((decode(name), ""))
       case _                    ⇒ None
     }).toSeq.flatten toMap
+
+  protected def parseParamsJson( params :String) :Map[String,String] = {
+    JSON.parseFull( params ) match {
+      case None => Map.empty
+      case m1 => 
+        val m = m1.get.asInstanceOf[Map[String,Any]]
+        m mapValues (_.toString)
+    }
+  }
 
   protected def decode(s: String) = URLDecoder.decode(s, "UTF-8")
 }
