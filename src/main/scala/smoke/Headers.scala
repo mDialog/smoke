@@ -29,7 +29,7 @@ trait Headers {
   lazy val acceptHeaders: Seq[String] =
     allHeaderValues("accept").map(_.split(",")).flatten.map {
       _.split(";").toList match {
-        case mt :: p :: Nil ⇒ Try(p.split("q=").last.toFloat).map(Some(mt, _)).getOrElse(Some(mt,1.0f))
+        case mt :: p :: Nil ⇒ Try(p.split("q=").last.toFloat).map(Some(mt, _)).getOrElse(Some(mt, 1.0f))
         case mt :: _        ⇒ Some(mt, 1.0f)
         case _              ⇒ None
       }
