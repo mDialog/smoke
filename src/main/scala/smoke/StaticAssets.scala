@@ -25,10 +25,31 @@ trait StaticAssets {
     bytes
   }
 
-  private lazy val assetFolder = Option(this.getClass.getClassLoader.getResource(publicFolder)) match {
-    case Some(url) ⇒ url.toString.split("file:").last
-    case _         ⇒ throw new Exception("Error: static assets folder is not accessible")
+  def readFileFromStream( file :String ) :Array[Byte] = {
+    val is = getClass.getResourceAsStream( file )
+
+    val BUFFER_SIZE=64*1024
+    val baos = new java.io.ByteArrayOutputStream(BUFFER_SIZE)
+    val buffer = new Array[Byte](BUFFER_SIZE)
+    var n = -1
+
+    n = is.read( buffer, 0, BUFFER_SIZE )
+    while( n > 0 ) {
+      baos.write( buffer, 0, n )
+      n = is.read( buffer, 0, BUFFER_SIZE )
+    }
+    is.close
+    baos.toByteArray
   }
+
+  private lazy val assetFolder = Option(this.getClass.getClassLoader.getResource(publicFolder)) match {
+    case Some(url) ⇒ url.toString.split("file:").last.split("!").last
+    case x         ⇒ throw new Exception("Error: static assets folder is not accessible: "+ x )
+  }
+  private lazy val bIsInJar =  Option(getClass.getClassLoader.getResource(publicFolder)) match {
+    case Some(url) => url.toString .contains( "!/" )
+    case _  => false
+   }
 
   private def loadAssets(folder: File): Seq[(String, Asset)] =
     folder.exists match {
@@ -52,14 +73,23 @@ trait StaticAssets {
     else
       (path: String) ⇒
         try {
-          val file = new File(s"$assetFolder$path")
-          val extension = getExtension(file.getName)
-          Some(Asset(MimeType(extension), readFile(file)))
+
+          val fileToGet=s"$assetFolder$path"
+          val extension = getExtension(fileToGet)
+
+          if( bIsInJar ) {
+            Some( Asset(MimeType(extension), readFileFromStream(fileToGet) ) )
+          } else {
+            val file = new File(fileToGet)
+            Some( Asset(MimeType(extension), readFile(file)))
+          }
+
         } catch {
           case e: FileNotFoundException ⇒ None
         }
 
   if (cacheAssetsPreload && cacheAssets) cachedAssets
+
 
   def responseFromAsset(path: String): Response = {
     loadAsset(path) match {
