@@ -33,6 +33,10 @@ class StaticAssetsTest extends FunSpecLike {
       assert(response.headers === Seq("Content-Type" -> "text/html"))
       assert(response.body.asInstanceOf[RawData].data === bytes)
     }
+    it("should not load anything outside of the static assets folder.") {
+      val response = staticAssets.responseFromAsset("/../pixel.gif")
+      assert(response === Response(NotFound))
+    }
   }
 
 }
