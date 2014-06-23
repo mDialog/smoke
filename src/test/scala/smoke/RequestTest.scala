@@ -385,6 +385,16 @@ class RequestTest extends FunSpecLike {
         headers = Seq("Content-Type" -> "application/x-www-form-urlencoded"))
       assert(request.formParams === Map("val" -> "some value"))
     }
+    it("should handle json post") {
+      val uri = "http://test.host"
+      val request = new test.TestRequest(uri,
+           body = """{ "a" : "1", "b" : "zzz" }""",
+           headers = Seq("Content-Type" -> "application/json"))
+
+     assert(request.params === Map(
+                             "a" -> "1",
+                              "b" -> "zzz"))
+    }
   }
 
   describe("params") {
@@ -398,6 +408,7 @@ class RequestTest extends FunSpecLike {
         "query val" -> "some value",
         "form val" -> "other value"))
     }
+
   }
 
 }
