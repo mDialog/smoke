@@ -4,35 +4,16 @@ import com.typesafe.config._
 import scala.concurrent.{ Future, ExecutionContext }
 import smoke.netty.NettyServer
 
-trait SmokeApp extends App with Smoke {
-  override def delayedInit(body: ⇒ Unit) = {
-    super[App].delayedInit(super[Smoke].delayedInit(body))
-  }
-}
-
-trait Smoke extends DelayedInit {
+trait Smoke {
   val smokeConfig: Config
-  implicit val executionContext: ExecutionContext
+  def executionContext: ExecutionContext
 
   private lazy val server = new NettyServer()(smokeConfig, executionContext)
 
   private var running = false
 
-  private var beforeFilter = { request: Request ⇒ request }
-  private var responder = { request: Request ⇒
-    Future.successful(Response(ServiceUnavailable))
-  }
-  private var afterFilter = { response: Response ⇒ response }
-  private var errorHandler: PartialFunction[(Request, Throwable), Response] = {
-    case (r, t: Throwable) ⇒ Response(InternalServerError, body = t.getMessage + "\n" +
-      t.getStackTrace.mkString("\n"))
-  }
-
-  private var shutdownHooks = List(() ⇒ {
-    server.stop()
-  })
-
   private def withErrorHandling(errorProne: smoke.Request ⇒ Future[Response]) = {
+    implicit val ec = executionContext
     case class RequestHandlerException(r: smoke.Request, e: Throwable) extends Exception("", e) {
       def asTuple: (smoke.Request, Throwable) = (r, e)
     }
@@ -51,53 +32,58 @@ trait Smoke extends DelayedInit {
       case rhe: RequestHandlerException ⇒ rhe.asTuple
     }
 
-    maybeFails _ andThen { _ recover (decapsulate andThen errorHandler) }
+    maybeFails _ andThen { _ recover (decapsulate andThen onError) }
   }
 
-  def application = withErrorHandling {
-    beforeFilter andThen responder andThen { _ map afterFilter }
+  private[smoke] def application = {
+    implicit val ec = executionContext
+    withErrorHandling {
+      before andThen onRequest andThen { _ map after }
+    }
   }
 
-  def before(filter: (Request) ⇒ Request) { beforeFilter = filter }
+  def before: PartialFunction[Request, Request] = { case request: Request ⇒ request }
 
-  def after(filter: (Response) ⇒ Response) { afterFilter = filter }
+  def onRequest: PartialFunction[Request, Future[Response]]
 
-  def onRequest(handler: (Request) ⇒ Future[Response]) { responder = handler }
+  def after: PartialFunction[Response, Response] = { case response: Response ⇒ response }
 
-  def onError(handler: PartialFunction[(Request, Throwable), Response]) {
-    errorHandler = handler orElse errorHandler
+  def onError: PartialFunction[(Request, Throwable), Response] = {
+    case (r, t: Throwable) ⇒
+      Response(InternalServerError, body = s"${t.getMessage}\n " + t.getStackTrace.mkString("\n"))
   }
 
-  def beforeShutdown(hook: ⇒ Unit) { shutdownHooks = hook _ :: shutdownHooks }
+  def beforeShutdown {}
 
-  def afterShutdown(hook: ⇒ Unit) { shutdownHooks = shutdownHooks ::: List(hook _) }
+  def afterShutdown {}
 
-  def reply(action: ⇒ Response) = Future(action)
+  def reply(action: ⇒ Response) = Future(action)(executionContext)
 
   def fail(e: Exception) = Future.failed(e)
+
+  def shutdownHooks = {
+    beforeShutdown
+    server.stop()
+    afterShutdown
+  }
 
   def shutdown() {
     if (running) {
       running = false
-      shutdownHooks foreach { hook ⇒ hook() }
+      shutdownHooks
     }
   }
 
-  private[smoke] def init() {
-    try {
+  def start() {
+    if (!running) try {
       server.setApplication(application)
       server.start()
       running = true
     } catch {
       case e: Throwable ⇒
-        shutdownHooks foreach { hook ⇒ hook() }
+        shutdownHooks
         throw e
     }
-  }
-
-  def delayedInit(body: ⇒ Unit) = {
-    body
-    init()
   }
 
   Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {
