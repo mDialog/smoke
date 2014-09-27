@@ -4,7 +4,7 @@ organization := "com.mdialog"
 
 version := "2.1.0"
 
-scalaVersion := "2.10.4"
+scalaVersion := "2.11.2"
 
 scalacOptions ++= Seq(
   "-unchecked",
@@ -15,12 +15,13 @@ scalacOptions ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "org.clapper" % "grizzled-slf4j_2.10" % "1.0.1",
+  "org.clapper" %% "grizzled-slf4j" % "1.0.2",
   "ch.qos.logback" % "logback-classic" % "1.0.5",
   "io.netty" % "netty" % "3.7.0.Final",
   "com.typesafe" % "config" % "1.2.0",
   "com.typesafe.akka" %% "akka-actor" % "2.3.2",
-  "org.scalatest" %% "scalatest" % "2.1.3" % "test"
+  "org.scalatest" %% "scalatest" % "2.1.3" % "test",
+  "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.2"
 )
 
 resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
