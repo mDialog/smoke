@@ -91,10 +91,10 @@ trait StaticAssets {
   if (cacheAssetsPreload && cacheAssets) cachedAssets
 
 
-  def responseFromAsset(path: String): Response = {
+  def responseFromAsset(path: String, status :ResponseStatus = Ok, headers :Seq[(String,String)] = List() ): Response = {
     loadAsset(path) match {
       case Some(asset) ⇒
-        Response(Ok, Seq("Content-Type" -> asset.contentType), RawData(asset.data))
+        Response(status, headers :+ ( "Content-Type" -> asset.contentType ), RawData(asset.data))
       case None ⇒
         Response(NotFound)
     }
