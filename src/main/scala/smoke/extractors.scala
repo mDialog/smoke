@@ -95,6 +95,12 @@ class Method(method: String) {
   def apply(req: Request) = req.method.equalsIgnoreCase(method)
 }
 
+object HostAndPort {
+  def unapply(req: Request) = Some( req.hostWithPort )
+  def apply(req: Request) = req.hostWithPort
+}
+
+
 object GET extends Method("GET")
 object POST extends Method("POST")
 object PUT extends Method("PUT")
