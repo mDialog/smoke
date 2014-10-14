@@ -128,11 +128,11 @@ class NettyServerHandler(
       }
 
       if (request.keepAlive) {
-        nettyResponse.setHeader(CONTENT_LENGTH, nettyResponse.getContent.readableBytes)
-        nettyResponse.setHeader(CONNECTION, KEEP_ALIVE)
+        HttpHeaders.setContentLength(nettyResponse, nettyResponse.getContent.readableBytes)
+        HttpHeaders.setKeepAlive(nettyResponse, true)
       }
 
-      headers foreach { pair ⇒ nettyResponse.addHeader(pair._1, pair._2) }
+      headers foreach { pair ⇒ HttpHeaders.addHeader(nettyResponse, pair._1, pair._2) }
 
       val channel = e.getChannel
       val future = channel.write(nettyResponse)
