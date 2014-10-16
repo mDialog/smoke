@@ -67,8 +67,8 @@ class NettyRequestTest extends FunSpec {
   describe("headers") {
     it("should return request headers") {
       val rawRequest = new DefaultHttpRequest(HTTP_1_1, GET, "http://test.host")
-      rawRequest.setHeader("Content-Type", "test/html")
-      rawRequest.setHeader("User-Agent", "TestRequest/1.0.0")
+      HttpHeaders.setHeader(rawRequest, "Content-Type", "test/html")
+      HttpHeaders.setHeader(rawRequest, "User-Agent", "TestRequest/1.0.0")
       val request = NettyRequest(address, rawRequest)
 
       assert(request.headers === Seq(
@@ -77,8 +77,8 @@ class NettyRequestTest extends FunSpec {
     }
     it("should return request headers when charset is defined") {
       val rawRequest = new DefaultHttpRequest(HTTP_1_1, GET, "http://test.host")
-      rawRequest.setHeader("Content-Type", "test/html;charset=UTF-8")
-      rawRequest.setHeader("User-Agent", "TestRequest/1.0.0")
+      HttpHeaders.setHeader(rawRequest, "Content-Type", "test/html;charset=UTF-8")
+      HttpHeaders.setHeader(rawRequest, "User-Agent", "TestRequest/1.0.0")
       val request = NettyRequest(address, rawRequest)
 
       assert(request.headers === Seq(
@@ -142,7 +142,7 @@ class NettyRequestTest extends FunSpec {
   describe("cookies") {
     it("should return cookies") {
       val rawRequest = new DefaultHttpRequest(HTTP_1_1, GET, "http://test.host")
-      rawRequest.setHeader("Cookie", "name=value; name2=value2")
+      HttpHeaders.setHeader(rawRequest, "Cookie", "name=value; name2=value2")
       val request = NettyRequest(address, rawRequest)
 
       assert(request.cookies == Map("name" -> "value", "name2" -> "value2"))

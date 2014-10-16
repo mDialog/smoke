@@ -12,7 +12,7 @@ import smoke.Request
 object NettyRequest {
   val cookieDecoder = new CookieDecoder()
   def extractCookies(request: HttpRequest): Map[String, String] =
-    Option(request.getHeader(HttpHeaders.Names.COOKIE)).map {
+    Option(request.headers.get(HttpHeaders.Names.COOKIE)).map {
       cookieDecoder.decode(_).map {
         c ⇒ (c.getName -> c.getValue)
       }.toMap
@@ -24,7 +24,7 @@ case class NettyRequest(address: SocketAddress, nettyRequest: HttpRequest) exten
   val method = nettyRequest.getMethod.toString
 
   val uri = new URI(nettyRequest.getUri)
-  val headers = nettyRequest.getHeaders map { e ⇒ (e.getKey.toLowerCase, e.getValue) } toSeq
+  val headers = nettyRequest.headers.entries map { e ⇒ (e.getKey.toLowerCase, e.getValue) } toSeq
 
   val keepAlive = HttpHeaders.isKeepAlive(nettyRequest)
 
