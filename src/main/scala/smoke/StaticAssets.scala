@@ -1,6 +1,7 @@
 package smoke
 
-import java.io.{ File, FileInputStream, FileNotFoundException }
+import java.net.URL
+import java.io.{ BufferedInputStream, FileInputStream }
 import scala.util.Try
 import scala.io.Source
 
@@ -10,6 +11,11 @@ trait StaticAssets {
   val publicFolder: String
   val cacheAssets: Boolean = false
 
+  val ApplicationPrefix =
+    this.getClass.getClassLoader.getResource("").getPath()
+  lazy val PublicFolderPrefix =
+    this.getClass.getClassLoader.getResource(publicFolder).getPath()
+
   private var cachedAssets = Map[String, Asset]()
 
   private def getExtension(name: String) = {
@@ -17,14 +23,23 @@ trait StaticAssets {
     if (dotIndex == -1) "" else name.substring(dotIndex + 1)
   }
 
+  private def isStaticAsset(r: URL) =
+    r.getPath().startsWith(PublicFolderPrefix) ||
+      (r.getProtocol() == "jar" &&
+        r.getPath().stripPrefix("file:").startsWith(ApplicationPrefix))
+
   private def readFile(path: String) = {
-    Option(this.getClass.getClassLoader.getResourceAsStream(path)) map {
-      is ⇒
+    Option(this.getClass.getClassLoader.getResource(path)) match {
+      case Some(r) if isStaticAsset(r) ⇒
+        val is = r.openStream
         try {
-          Source.fromInputStream(is).map(_.toByte).toArray
+          val bis = new BufferedInputStream(is)
+          Some(Stream.continually(bis.read).takeWhile(-1 !=).map(_.toByte).toArray)
         } finally {
           is.close()
         }
+      case _ ⇒
+        None
     }
   }
 
@@ -48,12 +63,7 @@ trait StaticAssets {
     else (path: String) ⇒ loadAsset(path)
 
   def responseFromAsset(path: String): Response = {
-    val securedPath = path.split("/").filterNot {
-      case ".." ⇒ true
-      case "."  ⇒ true
-      case _    ⇒ false
-    } mkString ("/")
-    getAsset(securedPath) match {
+    getAsset(path) match {
       case Some(asset) ⇒
         Response(Ok, Seq("Content-Type" -> asset.contentType), RawData(asset.data))
       case None ⇒

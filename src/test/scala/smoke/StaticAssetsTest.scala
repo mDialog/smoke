@@ -33,9 +33,25 @@ class StaticAssetsTest extends FunSpecLike {
       assert(response.headers === Seq("Content-Type" -> "text/html"))
       assert(response.body.asInstanceOf[RawData].data === bytes)
     }
+
+    it("should be able to serve binary files") {
+      import java.io.{ File, FileInputStream }
+      val file = new File("src/test/resources/public/public-pixel.gif")
+      val in = new FileInputStream(file)
+      val bytes = new Array[Byte](file.length.toInt)
+      in.read(bytes)
+      in.close()
+
+      val response = staticAssets.responseFromAsset("/public-pixel.gif")
+      assert(response.status === Ok)
+      assert(response.headers === Seq("Content-Type" -> "image/gif"))
+      assert(response.body.asInstanceOf[RawData].data === bytes)
+    }
+
     it("should not load anything outside of the static assets folder.") {
-      val response = staticAssets.responseFromAsset("/../pixel.gif")
-      assert(response === Response(NotFound))
+      assert(staticAssets.responseFromAsset("/../pixel.gif") === Response(NotFound))
+      assert(staticAssets.responseFromAsset("/../plant.jpg") === Response(NotFound))
+      assert(staticAssets.responseFromAsset("/../reference.conf") === Response(NotFound))
     }
   }
 
