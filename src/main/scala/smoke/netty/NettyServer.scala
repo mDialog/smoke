@@ -87,7 +87,10 @@ class NettyServer(implicit val config: Config, ec: ExecutionContext)
           }
 
           p.addLast("decoder", new HttpRequestDecoder)
-          p.addLast("aggregator", new HttpChunkAggregator(1048576))
+          p.addLast("aggregator",
+            new HttpChunkAggregator(
+              config.getIntOption("max-content-length")
+                .getOrElse(1048576)))
           p.addLast("encoder", new HttpResponseEncoder)
           p.addLast("deflater", new HttpContentCompressor)
           p.addLast("handler", handler)
