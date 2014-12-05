@@ -385,6 +385,13 @@ class RequestTest extends FunSpecLike {
         headers = Seq("Content-Type" -> "application/x-www-form-urlencoded"))
       assert(request.formParams === Map("val" -> "some value"))
     }
+
+    it("should return decoded params when present with Content-Type and charset") {
+      val request = new test.TestRequest("/test",
+        body = "val=some+value",
+        headers = Seq("Content-Type" -> "application/x-www-form-urlencoded; charset=UTF-8"))
+      assert(request.formParams === Map("val" -> "some value"))
+    }
   }
 
   describe("params") {

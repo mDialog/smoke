@@ -43,8 +43,9 @@ trait Request extends Headers {
   lazy val queryParams = queryString.map(parseParams(_)).getOrElse(Map.empty[String, String])
 
   lazy val formParams: Map[String, String] = contentType match {
-    case Some("application/x-www-form-urlencoded") ⇒ parseParams(body)
-    case _                                         ⇒ Map.empty
+    case Some(contentType) if contentType.startsWith("application/x-www-form-urlencoded") ⇒
+      parseParams(body)
+    case _ ⇒ Map.empty
   }
 
   lazy val params = queryParams ++ formParams
