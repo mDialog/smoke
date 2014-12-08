@@ -1,9 +1,10 @@
 package smoke
 
 import java.net.URL
-import java.io.{ BufferedInputStream, FileInputStream }
+import java.io.{ BufferedInputStream, FileInputStream, File }
 import scala.util.Try
 import scala.io.Source
+import scala.collection.JavaConversions._
 
 case class Asset(contentType: String, data: Array[Byte])
 
@@ -11,10 +12,10 @@ trait StaticAssets {
   val publicFolder: String
   val cacheAssets: Boolean = false
 
-  val ApplicationPrefix =
-    this.getClass.getClassLoader.getResource("").getPath()
-  lazy val PublicFolderPrefix =
-    this.getClass.getClassLoader.getResource(publicFolder).getPath()
+  val ApplicationPrefixes =
+    this.getClass.getClassLoader.getResources("").toList.map(_.getPath())
+  lazy val PublicFolderPrefixes =
+    this.getClass.getClassLoader.getResources(publicFolder).toList.map(_.getPath())
 
   private var cachedAssets = Map[String, Asset]()
 
@@ -23,23 +24,25 @@ trait StaticAssets {
     if (dotIndex == -1) "" else name.substring(dotIndex + 1)
   }
 
-  private def isStaticAsset(r: URL) =
-    r.getPath().startsWith(PublicFolderPrefix) ||
-      (r.getProtocol() == "jar" &&
-        r.getPath().stripPrefix("file:").startsWith(ApplicationPrefix))
+  private def isStaticAsset(r: URL) = {
+    (PublicFolderPrefixes.exists(r.getPath.startsWith(_)) ||
+      (r.getProtocol() == "jar" && {
+        val path = r.getPath().stripPrefix("file:")
+        ApplicationPrefixes.exists(path.startsWith(_))
+      })) &&
+      (new File(r.getFile())).isFile()
+  }
 
-  private def readFile(path: String) = {
-    Option(this.getClass.getClassLoader.getResource(path)) match {
-      case Some(r) if isStaticAsset(r) ⇒
+  private def readFile(path: String): Option[Array[Byte]] = {
+    this.getClass.getClassLoader.getResources(path).toList.collectFirst {
+      case r if isStaticAsset(r) ⇒
         val is = r.openStream
         try {
           val bis = new BufferedInputStream(is)
-          Some(Stream.continually(bis.read).takeWhile(-1 !=).map(_.toByte).toArray)
+          Stream.continually(bis.read).takeWhile(-1 !=).map(_.toByte).toArray
         } finally {
           is.close()
         }
-      case _ ⇒
-        None
     }
   }
 

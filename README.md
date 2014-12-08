@@ -15,7 +15,7 @@ In your build.sbt
 
     libraryDependencies += "com.mdialog" %% "smoke" % "2.0.1" //for akka 2.2.+
 
-    libraryDependencies += "com.mdialog" %% "smoke" % "2.1.1" //for akka 2.3.+
+    libraryDependencies += "com.mdialog" %% "smoke" % "2.1.3" //for akka 2.3.+
 
 
 Smoke 2.+ is made for use with Scala 2.10. If you're using an older
