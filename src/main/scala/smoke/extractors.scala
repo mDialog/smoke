@@ -78,6 +78,11 @@ object Params {
   def apply(req: Request) = req.params
 }
 
+object ParamsValues {
+  def unapply(req: Request) = Some(req.paramsValues)
+  def apply(req: Request) = req.paramsValues
+}
+
 object Cookies {
   def unapply(req: Request) = Some(req.cookies)
   def apply(req: Request) = req.cookies

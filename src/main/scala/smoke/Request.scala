@@ -40,13 +40,21 @@ trait Request extends Headers {
 
   def queryString = Option(uri.getRawQuery)
 
-  lazy val queryParams = queryString.map(parseParams(_)).getOrElse(Map.empty[String, String])
+  lazy val queryParamsValues: Map[String, Seq[String]] = queryString.map(parseParams(_)).getOrElse(Map.empty[String, Seq[String]])
 
-  lazy val formParams: Map[String, String] = contentType match {
-    case Some(contentType) if contentType.startsWith("application/x-www-form-urlencoded") ⇒
-      parseParams(body)
-    case _ ⇒ Map.empty
+  lazy val queryParams = queryParamsValues.map { case (param, values) ⇒ (param -> values.head) }
+
+  lazy val formParamsValues: Map[String, Seq[String]] = {
+    contentType match {
+      case Some(contentType) if contentType.startsWith("application/x-www-form-urlencoded") ⇒
+        parseParams(body)
+      case _ ⇒ Map.empty
+    }
   }
+
+  lazy val formParams: Map[String, String] = formParamsValues.map { case (param, values) ⇒ (param -> values.head) }
+
+  lazy val paramsValues = queryParamsValues ++ formParamsValues
 
   lazy val params = queryParams ++ formParams
 
@@ -84,12 +92,23 @@ trait Request extends Headers {
   override def toString = method + " - " + path + "-" + headers + "-" + "\n" + body
   def toShortString = method + " - " + path
 
-  protected def parseParams(params: String) =
-    (params.split("&") map (_.split("=").toList) map {
-      case name :: value :: Nil ⇒ Some((decode(name), decode(value)))
-      case name :: Nil          ⇒ Some((decode(name), ""))
-      case _                    ⇒ None
-    }).toSeq.flatten toMap
+  protected def parseParams(params: String): Map[String, Seq[String]] = {
+    ((params.split("&") map (_.split("=").toList)).foldLeft(Map[String, Seq[String]]()) {
+      (params, param) ⇒
+        (param match {
+          case name :: value :: Nil ⇒ Some((decode(name), decode(value)))
+          case name :: Nil          ⇒ Some((decode(name), ""))
+          case _                    ⇒ None
+        }) match {
+          case Some((name, value)) if (params.contains(name)) ⇒
+            params + (name -> (params(name) :+ value))
+          case Some((name, value)) ⇒
+            params + (name -> Seq(value))
+          case None ⇒ params
+        }
+
+    })
+  }
 
   protected def decode(s: String) = URLDecoder.decode(s, "UTF-8")
 }

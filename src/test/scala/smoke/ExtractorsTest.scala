@@ -25,6 +25,18 @@ class ExtractorsTest extends FunSpecLike {
     }
   }
 
+  describe("Params") {
+    it("should extract the params with their first value") {
+      assertResult(Some(Map("query val" -> "some value")))(Params.unapply(new test.TestRequest("http://test.host?query+val=some+value&query+val=other+value")))
+    }
+  }
+
+  describe("ParamsValues") {
+    it("should extract the params with their values") {
+      assertResult(Some(Map("query val" -> List("some value", "other value"))))(ParamsValues.unapply(new test.TestRequest("http://test.host?query+val=some+value&query+val=other+value")))
+    }
+  }
+
   describe("Filename") {
 
     it("should extract filenames with multiple periods") {

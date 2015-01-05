@@ -407,4 +407,16 @@ class RequestTest extends FunSpecLike {
     }
   }
 
+  describe("paramsValues") {
+    it("should return both query and form params values") {
+      val uri = "http://test.host?query+val=some+value&query+val=other+value"
+      val request = new test.TestRequest(uri,
+        body = "form+val=some+value&form+val=other+value",
+        headers = Seq("Content-Type" -> "application/x-www-form-urlencoded"))
+
+      assert(request.paramsValues === Map(
+        "query val" -> Seq("some value", "other value"),
+        "form val" -> Seq("some value", "other value")))
+    }
+  }
 }
