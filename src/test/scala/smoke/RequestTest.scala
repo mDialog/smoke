@@ -41,6 +41,11 @@ class RequestTest extends FunSpecLike {
 
       req = new test.TestRequest("http://test.com?=")
       assert(req.queryParams === Map())
+
+      req = new test.TestRequest("http://test.com",
+        headers = Seq("content-type" -> "application/x-www-form-urlencoded"),
+        method = "POST")
+      assert(req.params === Map())
     }
   }
 

@@ -86,9 +86,11 @@ trait Request extends Headers {
 
   protected def parseParams(params: String) =
     (params.split("&") map (_.split("=").toList) map {
-      case name :: value :: Nil ⇒ Some((decode(name), decode(value)))
-      case name :: Nil          ⇒ Some((decode(name), ""))
-      case _                    ⇒ None
+      case name :: value :: Nil if (!name.isEmpty) ⇒
+        Some((decode(name), decode(value)))
+      case name :: Nil if (!name.isEmpty) ⇒
+        Some((decode(name), ""))
+      case _ ⇒ None
     }).toSeq.flatten toMap
 
   protected def decode(s: String) = URLDecoder.decode(s, "UTF-8")
