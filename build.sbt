@@ -35,3 +35,11 @@ publishTo <<= version { (v: String) =>
 }
 
 parallelExecution in Test := false
+
+unmanagedBase <<= baseDirectory { base => base / "test/lib" }
+
+unmanagedJars in Test <<= unmanagedBase  map { base => (base ** "public.jar").classpath }
+
+excludeFilter in unmanagedJars in Compile := "public.jar"
+
+excludeFilter in unmanagedJars in Compile ~= { _ || "public.jar" }

@@ -12,8 +12,6 @@ trait StaticAssets {
   val publicFolder: String
   val cacheAssets: Boolean = false
 
-  val ApplicationPrefixes =
-    this.getClass.getClassLoader.getResources("").toList.map(_.getPath())
   lazy val PublicFolderPrefixes =
     this.getClass.getClassLoader.getResources(publicFolder).toList.map(_.getPath())
 
@@ -24,19 +22,20 @@ trait StaticAssets {
     if (dotIndex == -1) "" else name.substring(dotIndex + 1)
   }
 
-  private def isStaticAsset(r: URL) = {
-    (PublicFolderPrefixes.exists(r.getPath.startsWith(_)) ||
-      (r.getProtocol() == "jar" && {
-        val path = r.getPath().stripPrefix("file:")
-        ApplicationPrefixes.exists(path.startsWith(_))
-      })) &&
-      (new File(r.getFile())).isFile()
-  }
+  private def isStaticAsset(url: URL) =
+    url.getProtocol() match {
+      case "file" if new File(url.getFile()).isFile() ⇒
+        PublicFolderPrefixes.exists(url.getPath.startsWith(_))
+      case "jar" ⇒ true
+      case _     ⇒ false
+    }
 
   private def readFile(path: String): Option[Array[Byte]] = {
-    this.getClass.getClassLoader.getResources(path).toList.collectFirst {
+    val resources = this.getClass.getClassLoader.getResources(path).toList
+    resources.collectFirst {
       case r if isStaticAsset(r) ⇒
-        val is = r.openStream
+        val connection = r.openConnection()
+        val is = connection.getInputStream()
         try {
           val bis = new BufferedInputStream(is)
           Stream.continually(bis.read).takeWhile(-1 !=).map(_.toByte).toArray
@@ -54,7 +53,7 @@ trait StaticAssets {
     }
   }
 
-  private val getAsset: String ⇒ Option[Asset] =
+  private lazy val getAsset: String ⇒ Option[Asset] =
     if (cacheAssets)
       (path: String) ⇒ cachedAssets.get(path).orElse {
         val asset = loadAsset(path)
