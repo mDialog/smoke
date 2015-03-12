@@ -113,6 +113,12 @@ class StaticAssetsTest extends FunSpecLike {
       assert(response2.body.asInstanceOf[RawData].data === "before-cache".getBytes)
     }
 
+    it("should not list assets when asking for a folder, when public is in a jar file") {
+      val staticAssets = new MockAsset(false)
+      val response = staticAssets.responseFromAsset("/")
+      assert(response.status === NotFound)
+    }
+
     ignore("should not prevent from loading resources with sbt run") {}
     ignore("should not prevent from loading resources when smoke is bundled") {}
   }

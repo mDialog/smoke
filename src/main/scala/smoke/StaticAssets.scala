@@ -2,6 +2,7 @@ package smoke
 
 import java.net.URL
 import java.io.{ BufferedInputStream, FileInputStream, File }
+import java.util.zip.ZipFile
 import scala.util.Try
 import scala.io.Source
 import scala.collection.JavaConversions._
@@ -22,12 +23,29 @@ trait StaticAssets {
     if (dotIndex == -1) "" else name.substring(dotIndex + 1)
   }
 
+  private def isJarDirectory(url: URL) =
+    url.getFile().split("!").toList match {
+      case jarPath :: inJarPath :: Nil ⇒
+        val jar = new ZipFile(new URL(jarPath).getFile)
+        val entry = jar.getEntry(inJarPath.tail)
+        entry.isDirectory() || {
+          var input: java.io.InputStream = null
+          try {
+            input = jar.getInputStream(entry)
+          } finally {
+            if (input != null) input.close()
+          }
+          input == null
+        }
+    }
+
   private def isStaticAsset(url: URL) =
     url.getProtocol() match {
       case "file" if new File(url.getFile()).isFile() ⇒
         PublicFolderPrefixes.exists(url.getPath.startsWith(_))
-      case "jar" ⇒ true
-      case _     ⇒ false
+      case "jar" ⇒
+        !isJarDirectory(url)
+      case _ ⇒ false
     }
 
   private def readFile(path: String): Option[Array[Byte]] = {
