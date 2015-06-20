@@ -53,6 +53,10 @@ class StaticAssetsTest extends FunSpecLike {
       assert(staticAssets.responseFromAsset("/../plant.jpg") === Response(NotFound))
       assert(staticAssets.responseFromAsset("/../reference.conf") === Response(NotFound))
     }
+
+    it("should not return anything if it's a folder") {
+      staticAssets.responseFromAsset("/../") === Response(NotFound)
+    }
   }
 
 }
