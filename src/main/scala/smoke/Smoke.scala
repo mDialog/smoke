@@ -51,7 +51,12 @@ trait Smoke extends DelayedInit {
       case rhe: RequestHandlerException ⇒ rhe.asTuple
     }
 
-    maybeFails _ andThen { _ recover (decapsulate andThen errorHandler) }
+    def tryAfterFilter(x: Response): Response =
+      try { afterFilter(x) } catch { case _: Throwable ⇒ x }
+
+    maybeFails _ andThen {
+      _ recover (decapsulate andThen errorHandler andThen tryAfterFilter)
+    }
   }
 
   def application = withErrorHandling {
