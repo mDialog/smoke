@@ -4,13 +4,15 @@ import org.scalatest.FunSpecLike
 import scala.concurrent.duration.Duration
 
 import smoke.test._
+import java.io._
 
 class StaticAssetsTest extends FunSpecLike {
 
-  class MockAsset extends StaticAssets {
+  class MockAsset(cacheEnabled: Boolean) extends StaticAssets {
     val publicFolder = "public"
+    override val cacheAssets = cacheEnabled
   }
-  val staticAssets = new MockAsset
+  val staticAssets = new MockAsset(false)
 
   describe("when asset does not exist") {
     it("should respond with 404") {
@@ -57,6 +59,68 @@ class StaticAssetsTest extends FunSpecLike {
     it("should not return anything if it's a folder") {
       staticAssets.responseFromAsset("/../") === Response(NotFound)
     }
+
+    it("should load resources from jar too") {
+      val response = staticAssets.responseFromAsset("/in-jar.html")
+      assert(response.status === Ok)
+    }
+
+    it("should not cache the data when cache is disabled") {
+      val staticAssets = new MockAsset(false)
+
+      import scala.collection.JavaConversions._
+
+      val prefix = this.getClass.getClassLoader.getResources("public").toList.map(_.getPath()).head
+      val file = new File(s"$prefix/not-cached.txt")
+      val pw = new PrintWriter(file)
+      pw.write("before-cache")
+      pw.close
+
+      val response = staticAssets.responseFromAsset("/not-cached.txt")
+      assert(response.status === Ok)
+      assert(response.body.asInstanceOf[RawData].data === "before-cache".getBytes)
+
+      val pw2 = new PrintWriter(file)
+      pw2.write("after-cache")
+      pw2.close
+
+      val response2 = staticAssets.responseFromAsset("/not-cached.txt")
+      assert(response2.status === Ok)
+      assert(response2.body.asInstanceOf[RawData].data === "after-cache".getBytes)
+    }
+
+    it("should cache the data when cache is enabled") {
+      val staticAssets = new MockAsset(true)
+
+      import scala.collection.JavaConversions._
+
+      val prefix = this.getClass.getClassLoader.getResources("public").toList.map(_.getPath()).head
+      val file = new File(s"$prefix/cached.txt")
+      val pw = new PrintWriter(file)
+      pw.write("before-cache")
+      pw.close
+
+      val response = staticAssets.responseFromAsset("/cached.txt")
+      assert(response.status === Ok)
+      assert(response.body.asInstanceOf[RawData].data === "before-cache".getBytes)
+
+      val pw2 = new PrintWriter(file)
+      pw2.write("after-cache")
+      pw2.close
+
+      val response2 = staticAssets.responseFromAsset("/cached.txt")
+      assert(response2.status === Ok)
+      assert(response2.body.asInstanceOf[RawData].data === "before-cache".getBytes)
+    }
+
+    it("should not list assets when asking for a folder, when public is in a jar file") {
+      val staticAssets = new MockAsset(false)
+      val response = staticAssets.responseFromAsset("/")
+      assert(response.status === NotFound)
+    }
+
+    ignore("should not prevent from loading resources with sbt run") {}
+    ignore("should not prevent from loading resources when smoke is bundled") {}
   }
 
 }

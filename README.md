@@ -15,7 +15,7 @@ In your build.sbt
 
     libraryDependencies += "com.mdialog" %% "smoke" % "2.0.1" //for akka 2.2.+
 
-    libraryDependencies += "com.mdialog" %% "smoke" % "2.1.4" //for akka 2.3.+
+    libraryDependencies += "com.mdialog" %% "smoke" % "2.1.5" //for akka 2.3.+
 
 
 Smoke 2.+ is made for use with Scala 2.10. If you're using an older
@@ -305,7 +305,7 @@ This is the same way Smoke processes requests while your app is running.
 
 ## Documentation
 
-Read the API documentation here: [http://mdialog.github.com/api/smoke-2.1.4/](http://mdialog.github.com/api/smoke-2.1.4/)
+Read the API documentation here: [http://mdialog.github.com/api/smoke-2.1.5/](http://mdialog.github.com/api/smoke-2.1.5/)
 
 ## Mailing list
 
