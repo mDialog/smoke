@@ -114,8 +114,12 @@ class NettyServerHandler(
   import HttpHeaders.Values._
 
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
-    val address = e.getRemoteAddress
-    val request = NettyRequest(address, e.getMessage.asInstanceOf[HttpRequest])
+    val channel = ctx.getChannel
+    val remoteAddress = channel.getRemoteAddress.asInstanceOf[InetSocketAddress]
+    val localAddress = channel.getLocalAddress.asInstanceOf[InetSocketAddress]
+
+    val request = NettyRequest(remoteAddress, localAddress,
+      e.getMessage.asInstanceOf[HttpRequest])
 
     application(request) map { response ⇒
       val status = HttpResponseStatus.valueOf(response.statusCode)

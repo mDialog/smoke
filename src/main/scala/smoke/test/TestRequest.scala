@@ -13,7 +13,7 @@ case class TestRequest(uriString: String,
 
   val version = "HTTP/1.1"
   val uri = new URI(uriString)
-
+  val requestPort = uri.getPort
   val cookies: Map[String, String] =
     allHeaderValues("Cookie")
       .mkString(";") // Concatenate everything together in case one "Cookie" value defined several key=value; key=value

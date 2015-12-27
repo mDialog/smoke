@@ -2,7 +2,7 @@ name := "smoke"
 
 organization := "com.mdialog"
 
-version := "2.1.5"
+version := "2.1.6"
 
 scalaVersion := "2.11.0"
 
