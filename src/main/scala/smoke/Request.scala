@@ -7,12 +7,12 @@ trait Request extends Headers {
   val method: String
   val uri: URI
   val requestIp: String
+  val requestPort: Int
   val keepAlive: Boolean
   val headers: Seq[(String, String)]
   val cookies: Map[String, String]
   val body: String
   val contentLength: Int
-
   val timestamp: Long = System.currentTimeMillis
 
   lazy val host = lastHeaderValue("host").
@@ -27,7 +27,7 @@ trait Request extends Headers {
           case _                   ⇒ None
         }
       } orElse {
-        uri.getPort match {
+        requestPort match {
           case i if i > 0 ⇒ Some(i)
           case _          ⇒ None
         }

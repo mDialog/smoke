@@ -19,16 +19,22 @@ object NettyRequest {
     }.getOrElse(Map())
 }
 
-case class NettyRequest(address: SocketAddress, nettyRequest: HttpRequest) extends Request {
+case class NettyRequest(
+    remoteAddress: InetSocketAddress,
+    localAddress: InetSocketAddress,
+    nettyRequest: HttpRequest) extends Request {
+
   val version = nettyRequest.getProtocolVersion.toString
   val method = nettyRequest.getMethod.toString
 
   val uri = new URI(nettyRequest.getUri)
+
   val headers = nettyRequest.headers.entries map { e ⇒ (e.getKey.toLowerCase, e.getValue) } toSeq
 
   val keepAlive = HttpHeaders.isKeepAlive(nettyRequest)
 
-  val requestIp = address.asInstanceOf[InetSocketAddress].getAddress.getHostAddress
+  val requestIp = remoteAddress.getAddress.getHostAddress
+  val requestPort = localAddress.getPort
 
   val cookies = NettyRequest.extractCookies(nettyRequest)
 
