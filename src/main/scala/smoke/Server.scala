@@ -106,11 +106,17 @@ trait Server {
 
   val logDateFormat = new SimpleDateFormat("dd/MMM/yyyy:HH:mm:ss Z")
 
+  val logQueryParams = config.getBoolean("log-query-params")
+
   val log = { (request: Request, response: Response) ⇒
     val entry = request.ip + " - - " +
       "[" + logDateFormat.format(new Date()) + "] " +
-      "\"" + request.method + " " + request.path + " " + request.version + "\" " +
-      response.statusCode + " " + response.contentLength + " " + (System.currentTimeMillis - request.timestamp) + "ms"
+      "\"" + request.method + " " +
+      (if (logQueryParams) request.uri.toString else request.path) + " " +
+      request.version + "\" " +
+      response.statusCode + " " + response.contentLength + " " + (System.currentTimeMillis - request.timestamp) + "ms " +
+      "\"" + request.lastHeaderValue("referer").getOrElse("-") + "\" " +
+      "\"" + request.lastHeaderValue("user-agent").getOrElse("-") + "\""
 
     accessLogger.info(entry)
   }
