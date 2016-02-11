@@ -110,7 +110,9 @@ trait Server {
     val entry = request.ip + " - - " +
       "[" + logDateFormat.format(new Date()) + "] " +
       "\"" + request.method + " " + request.path + " " + request.version + "\" " +
-      response.statusCode + " " + response.contentLength + " " + (System.currentTimeMillis - request.timestamp) + "ms"
+      response.statusCode + " " + response.contentLength + " " + (System.currentTimeMillis - request.timestamp) + "ms " +
+      "\"" + request.lastHeaderValue("referer").getOrElse("-") + "\" " +
+      "\"" + request.lastHeaderValue("user-agent").getOrElse("-") + "\""
 
     accessLogger.info(entry)
   }
